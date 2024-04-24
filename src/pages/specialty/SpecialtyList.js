@@ -1,15 +1,15 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Button } from 'devextreme-react';
 import SpecialtyModal from './SpecialtyModal';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { DeleteConfirmationModal } from '../../components';
 import DataGrid, { Column, Button as GridButton,  Sorting, FilterRow, Pager, Paging } from 'devextreme-react/data-grid';
 import { LoadPanel } from 'devextreme-react/load-panel';
-import { getAPI, postAPI, putAPI } from '../../services';
+import { deleteApi, getAPI, postAPI, putAPI } from '../../services';
 
-const SpecialtyList = ({ darkMode }) => {
+const SpecialtyList = () => {
     const token = localStorage.getItem("token");
+    const baseUrl = process.env.REACT_APP_BASE_URL;
     const navigate = useNavigate();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [specialties, setSpecialties] = useState([]);
@@ -34,7 +34,7 @@ const SpecialtyList = ({ darkMode }) => {
     const getSpecialityList = async () => {
         setLoadPanelVisible(true)
         try {
-            const apiUrl = 'https://localhost:7137/api/Speciality/GetList';
+            const apiUrl = `${baseUrl}Speciality/GetList`;
             const responseData = await getAPI(apiUrl, token);
             setSpecialties(responseData)
             setLoadPanelVisible(false)
@@ -71,7 +71,7 @@ const SpecialtyList = ({ darkMode }) => {
 
             }
             try {
-                const apiUrl = 'https://localhost:7137/api/Speciality/Update/';
+                const apiUrl = `${baseUrl}Speciality/Update/`;
                 await putAPI(apiUrl, updatedData, token);
                 getSpecialityList();
                 handleCloseModal();
@@ -86,7 +86,7 @@ const SpecialtyList = ({ darkMode }) => {
             }
 
             try {
-                const apiUrl = 'https://localhost:7137/api/Speciality/Insert';
+                const apiUrl = `${baseUrl}Speciality/Insert`;
                 await postAPI(apiUrl, data, token);
                 getSpecialityList();
                 handleCloseModal();
@@ -110,20 +110,19 @@ const SpecialtyList = ({ darkMode }) => {
 
     const handleDeleteConfirmed = async () => {
         try {
-            await axios.delete(`https://localhost:7137/api/Speciality/Delete/${deleteSpecialtyId}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
+            const apiUrl = `${baseUrl}Speciality/Delete`;
+            await deleteApi(apiUrl, deleteSpecialtyId, token);
             getSpecialityList();
             setIsDeleteModalOpen(false);
-        } catch (error) {
-            console.error('Error deleting item:', error.response.data);
-            if (error.response.data.includes("Selected record exists in Doctors.")) {
-                setInUseError(true)
+          } catch (error) {
+            console.error("Error:", error.message);
+            if (
+              error.response &&
+              error.response.data.includes("Selected record exists in Doctors.")
+            ) {
+              setInUseError(true);
             }
-
-        }
+          }
     };
 
     const handleChange = useCallback((name, value) => {
@@ -145,8 +144,8 @@ const SpecialtyList = ({ darkMode }) => {
                 shadingColor="rgba(0,0,0,0.4)"
                 visible={loadPanelVisible}
             />
-            <h2 className={'content-block'}>Specialty List</h2>
-            <div className="w-100 d-flex justify-content-end">
+            <h2 className={'content-block ms-0'}>Specialities</h2>
+            <div className="w-100 d-flex justify-content-end mb-3">
                 <Button variant="primary" onClick={handleAddClick}>
                     Add
                 </Button>

@@ -22,6 +22,7 @@
       .dx-treeview-item {
         padding-left: 0;
         flex-direction: row-reverse;
+        justify-content: start;
 
         .dx-icon {
           width: $side-panel-min-width !important;

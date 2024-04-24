@@ -6,10 +6,10 @@ const routes = [
     //     path: '/tasks',
     //     element: TasksPage
     // },
-    {
-        path: '/profile',
-        element: ProfilePage
-    },
+    // {
+    //     path: '/profile',
+    //     element: ProfilePage
+    // },
     {
         path: '/home',
         element: HomePage

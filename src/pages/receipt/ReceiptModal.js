@@ -1,22 +1,12 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useEffect, useCallback } from "react";
 import { Col } from "react-bootstrap";
-import {
-  Validator,
-  RequiredRule,
-  CompareRule,
-  EmailRule,
-  PatternRule,
-  StringLengthRule,
-  RangeRule,
-  AsyncRule,
-  CustomRule,
-} from "devextreme-react/validator";
+import { Validator, RequiredRule } from "devextreme-react/validator";
 import { Button } from "devextreme-react/button";
 import { Popup } from "devextreme-react/popup";
-import TextBox, { TextBoxTypes } from "devextreme-react/text-box";
+import TextBox from "devextreme-react/text-box";
 import DateBox from "devextreme-react/date-box";
 import { SelectBox } from "devextreme-react/select-box";
-import { NumberBox } from 'devextreme-react/number-box';
+import { NumberBox } from "devextreme-react/number-box";
 
 const ReceiptModal = ({
   show,
@@ -28,10 +18,6 @@ const ReceiptModal = ({
   handleChange,
   setReceiptData,
   itemList,
-  receiptError,
-  setReceiptError,
-  darkMode,
-
 }) => {
   const formattedItemOptions = itemList.map((item) => ({
     Name: item.ItemName,
@@ -55,8 +41,6 @@ const ReceiptModal = ({
   });
 
   useEffect(() => {
-    debugger;
-    console.log("object", selectedReceipt);
     if (selectedReceipt) {
       setReceiptData({
         ...receiptData,
@@ -69,7 +53,6 @@ const ReceiptModal = ({
         receiptDetail: dataDetail,
       });
     }
-    console.log("received", receiptData.receiptDetail);
   }, [selectedReceipt]);
 
   const handleAddRow = () => {
@@ -101,7 +84,6 @@ const ReceiptModal = ({
 
   // Calculate discount amount
   const calculateDiscountAmount = (item) => {
-    console.log("calculated value", item);
     return (item.quantity * item.rate * item.discountPercent) / 100;
   };
 
@@ -129,67 +111,30 @@ const ReceiptModal = ({
     0
   );
 
-
-
   const handleItemChange = (name, index, e) => {
-    console.log("nameChange", name);
-    console.log("changedValue", e);
-    console.log("Index", index);
-
-    setReceiptData(prevState => {
+    setReceiptData((prevState) => {
       const updatedItems = [...prevState.receiptDetail];
       updatedItems[index]["itemID"] = name.value;
       return {
         ...prevState,
-        receiptDetail: updatedItems
+        receiptDetail: updatedItems,
       };
     });
-  };
-
-  const customStyles = {
-    control: (provided) => ({
-      ...provided,
-      backgroundColor: darkMode ? "bg-dark" : "bg-light", // Change background color based on darkMode
-    }),
-    option: (provided, state) => ({
-      ...provided,
-      backgroundColor: state.isSelected
-        ? darkMode
-          ? "#333"
-          : "#007bff"
-        : darkMode
-          ? "#000"
-          : "#fff",
-      color: state.isSelected ? "#fff" : darkMode ? "#fff" : "#000",
-    }),
-    singleValue: (provided) => ({
-      ...provided,
-      color: darkMode ? "#fff" : "#000", // Change text color of the selected value based on darkMode
-    }),
   };
 
   const now = new Date();
 
-  const [value, setValue] = useState(new Date(1981, 3, 27));
-
-  const onValueChanged = useCallback((e) => {
-    setValue(e.value);
-  }, []);
-
   const handleValueChange = useCallback((name, index, e) => {
-    console.log("nameCahnge", name)
-    console.log("changedValue", index)
-    console.log("Index", e)
-    setReceiptData(prevState => {
+    setReceiptData((prevState) => {
       const updatedItems = [...prevState.receiptDetail];
       updatedItems[index][`${name}`] = e;
       return {
         ...prevState,
-        receiptDetail: updatedItems
+        receiptDetail: updatedItems,
       };
     });
   }, []);
-  console.log("this is Selevceted", receiptData)
+
   return (
     <Popup
       visible={show}
@@ -198,10 +143,11 @@ const ReceiptModal = ({
       hideOnOutsideClick={true}
       showCloseButton={true}
       showTitle={true}
-      title={selectedReceipt ? "Edit" : "Add"}
-      container=".dx-viewport"
+      title={selectedReceipt ? "Edit Receipt" : "Add Receipt"}
+      // container=".dx-viewport"
       maxWidth={850}
-      maxHeight={550}
+      maxHeight={"95vh"}
+      height={560}
     >
       <form onSubmit={handleSave}>
         <div className="d-flex justify-content-between my-2">
@@ -215,21 +161,15 @@ const ReceiptModal = ({
 
           <DateBox
             type="date"
-            // defaultValue={now}
-            value={(receiptData?.receiptDate) ? (receiptData?.receiptDate) : now}
-            // min={tenYearsAgo}
-            // max={tenYearsAgo}
-            // elementAttr={dateBoxAttributes}
+            value={receiptData?.receiptDate ? receiptData?.receiptDate : now}
             maxLength={50}
             label="Receipt Date"
             labelMode="floating"
             onValueChanged={handleDateChange}
             validationMessagePosition="down"
             pickerType={"calendar"}
-            // displayFormat={"shortdate"}
             useMaskBehavior={true}
           />
-
         </div>
         <TextBox
           name="personName"
@@ -242,21 +182,17 @@ const ReceiptModal = ({
           showClearButton={true}
           maxLength={20}
           validationMessagePosition="down"
-        >
-          {/* <Validator>
-            <RequiredRule message="Please Enter Person Name" />
-          </Validator> */}
-        </TextBox>
+        ></TextBox>
 
         {receiptData.receiptDetail.map((item, index) => (
           <div key={index} className="d-md-flex gap-1 my-2">
-            <Col >
+            <Col>
               <SelectBox
                 searchEnabled={true}
                 dataSource={formattedItemOptions}
                 displayExpr={"Name"}
                 valueExpr={"ID"}
-                value={(item.itemID)?(item.itemID):null}
+                value={item.itemID ? item.itemID : null}
                 onValueChanged={(e) => handleItemChange(e, index, item)}
                 showDropDownButton={true}
                 label="ItemName"
@@ -268,43 +204,22 @@ const ReceiptModal = ({
                 </Validator>
               </SelectBox>
             </Col>
-            {/* <Col>
-              <NumberBox
-                name='unit'
-                mode="number"
-                placeholder="Unit"
-                min={0}
-                step={0}
-                // format={{ type:'decimal', precision:1}}
-                value={item.unit}
-                maxLength={10}
-                valueChangeEvent='input'
-                label='Unit'
-                labelMode='floating'
-                onValueChange={(e) => { handleValueChange("unit", index, e) }}
-                validationMessagePosition='bottom'
-              >
-                <Validator>
-                  <RequiredRule message="Please Enter Unit" />
-                </Validator>
-              </NumberBox>
-
-            </Col> */}
             <Col>
               <NumberBox
-                name='rate'
+                name="rate"
                 mode="number"
                 placeholder="Rate"
                 min={0}
                 step={0}
-                // format={{ type:'decimal', precision:1}}
                 value={item.rate}
                 maxLength={10}
-                valueChangeEvent='input'
-                label='Rate'
-                labelMode='floating'
-                onValueChange={(e) => { handleValueChange("rate", index, e) }}
-                validationMessagePosition='bottom'
+                valueChangeEvent="input"
+                label="Rate"
+                labelMode="floating"
+                onValueChange={(e) => {
+                  handleValueChange("rate", index, e);
+                }}
+                validationMessagePosition="bottom"
               >
                 <Validator>
                   <RequiredRule message="Please Enter Rate" />
@@ -313,19 +228,20 @@ const ReceiptModal = ({
             </Col>
             <Col>
               <NumberBox
-                name='quantity'
+                name="quantity"
                 mode="number"
                 placeholder="Quantity"
                 min={0}
                 step={0}
-                // format={{ type:'decimal', precision:1}}
                 value={item.quantity}
                 maxLength={10}
-                valueChangeEvent='input'
-                label='Quantity'
-                labelMode='floating'
-                onValueChange={(e) => { handleValueChange("quantity", index, e) }}
-                validationMessagePosition='bottom'
+                valueChangeEvent="input"
+                label="Quantity"
+                labelMode="floating"
+                onValueChange={(e) => {
+                  handleValueChange("quantity", index, e);
+                }}
+                validationMessagePosition="bottom"
               >
                 <Validator>
                   <RequiredRule message="Please Enter Quantity" />
@@ -348,19 +264,20 @@ const ReceiptModal = ({
             </Col>
             <Col>
               <NumberBox
-                name='discountPercent'
+                name="discountPercent"
                 mode="number"
                 placeholder="Discount Percent"
                 min={0}
                 step={0}
-                // format={{ type:'decimal', precision:1}}
                 value={item.discountPercent}
                 maxLength={10}
-                valueChangeEvent='input'
-                label='Discount Percent'
-                labelMode='floating'
-                onValueChange={(e) => { handleValueChange("discountPercent", index, e) }}
-                validationMessagePosition='bottom'
+                valueChangeEvent="input"
+                label="Discount Percent"
+                labelMode="floating"
+                onValueChange={(e) => {
+                  handleValueChange("discountPercent", index, e);
+                }}
+                validationMessagePosition="bottom"
               >
                 <Validator>
                   <RequiredRule message="Please Enter Discount Percent" />
@@ -402,7 +319,7 @@ const ReceiptModal = ({
             label="Total Quantity"
             labelMode="floating"
             placeholder="Total Quantity"
-            value={totalQuantity ? (totalQuantity) : 0}
+            value={totalQuantity ? totalQuantity : 0}
             maxLength={20}
             readOnly={true}
           ></TextBox>
@@ -442,7 +359,7 @@ const ReceiptModal = ({
           />
           <Button
             useSubmitBehavior={true}
-            text="Save"
+            text={selectedReceipt ? "Update" : "Save"}
             type="default"
             stylingMode="contained"
           />

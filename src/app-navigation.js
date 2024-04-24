@@ -8,10 +8,10 @@ export const navigation = [
     text: 'Sections',
     icon: 'folder',
     items: [
-      {
-        text: 'Profile',
-        path: '/profile'
-      },
+      // {
+      //   text: 'Profile',
+      //   path: '/profile'
+      // },
       // {
       //   text: 'Tasks',
       //   path: '/tasks'
@@ -25,17 +25,17 @@ export const navigation = [
         path: '/doctor'
       },
       {
-        text: 'Specialties',
+        text: 'Specialities',
         path: '/specialty'
+      },
+      {
+        text: 'Receipts',
+        path: '/receipt'
       },
       {
         text: 'Appointments',
         path: '/appointment'
       },
-      {
-        text: 'Receipts',
-        path: '/receipt'
-      }
     ]
   }
   ];

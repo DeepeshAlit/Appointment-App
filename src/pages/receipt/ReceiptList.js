@@ -1,15 +1,16 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Button } from "react-bootstrap";
+import { Button } from "devextreme-react";
 import ReceiptModal from "./ReceiptModal";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { DeleteConfirmationModal } from '../../components';
-import DataGrid, { Column, Button as GridButton, Scrolling, Editing, Grouping, GroupPanel, Sorting, FilterRow, HeaderFilter, Selection, MasterDetail, Paging, Pager, RequiredRule } from 'devextreme-react/data-grid';
+import DataGrid, { Column, Button as GridButton, GroupPanel, Sorting, FilterRow, HeaderFilter,Paging, Pager } from 'devextreme-react/data-grid';
 import { LoadPanel } from 'devextreme-react/load-panel';
 import moment from "moment";
+import { deleteApi, getAPI, postAPI, putAPI } from "../../services";
 
-const ReceiptList = ({ darkMode }) => {
+const ReceiptList = () => {
     const token = localStorage.getItem("token");
+    const baseUrl = process.env.REACT_APP_BASE_URL;
     const navigate = useNavigate();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [receipts, setReceipts] = useState([]);
@@ -46,14 +47,6 @@ const ReceiptList = ({ darkMode }) => {
     }
 
     const [receiptData, setReceiptData] = useState(initialData);
-    const initialErrors = {
-        receiptNo: false,
-        personName: false,
-        receiptDate: false,
-        remarks: false,
-        receiptDetail: false
-    }
-    const [receiptError, setReceiptError] = useState(initialErrors)
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const deleteMessage = "Are you sure you want to delete this Receipt?"
 
@@ -63,80 +56,25 @@ const ReceiptList = ({ darkMode }) => {
         }
     }, [])
 
-    const validateReceipt = () => {
-        debugger
-        let hasError = false;
-        let hasDetailError = false;
-        const newErrors = {};
-
-        // Check for missing values in receiptData object
-        for (const key in receiptData) {
-            if (key !== 'receiptDetail' && key !== 'receiptID' && !receiptData[key]) {
-                newErrors[key] = true;
-                hasError = true;
-            } else {
-                newErrors[key] = false;
-            }
-        }
-
-        // Check for missing values in receiptDetail array
-        if (receiptData.receiptDetail) {
-            receiptData.receiptDetail.forEach((detail, index) => {
-                let detailError = false; // Flag to track if any error occurs in detail object
-                for (const key in detail) {
-                    if (key !== 'receiptDetailID' && key !== 'receiptID' && key !== 'discount' && key !== 'discountPercent' && key !== 'amount' && key !== 'itemName' && key !== 'grossAmount' && key !== 'unit' && !detail[key]) {
-                        newErrors[`receiptDetail[${index}].${key}`] = true;
-                        hasError = true;
-                        detailError = true; // Set detailError to true if any error occurs in detail object
-                    } else {
-                        newErrors[`receiptDetail[${index}].${key}`] = false;
-                    }
-                }
-                if (detailError) {
-                    hasDetailError = true; // Set hasDetailError to true if any detail error occurs
-                }
-            });
-            newErrors['receiptDetail'] = hasDetailError; // Set receiptDetail error based on hasDetailError
-        }
-
-        setReceiptError(newErrors);
-
-        return hasError;
-    };
-
     const fetchReceiptList = async () => {
         setLoadPanelVisible(true)
         try {
-            const response = await axios.get(
-                "https://localhost:7137/api/Receipt/GetList",
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-            const receiptList = response.data;
-            setReceipts(receiptList);
+            const apiUrl = `${baseUrl}Receipt/GetList`;
+            const responseData = await getAPI(apiUrl, token);
+            setReceipts(responseData)
             setLoadPanelVisible(false)
-            console.log("Receipt list:", receiptList);
         } catch (error) {
-            console.error("Error fetching receipt list:", error.message);
+            console.error('Error:', error.message);
             setLoadPanelVisible(false)
         }
-    };
-
+    }
     const fetchItemsList = async () => {
         try {
-            const response = await axios.get('https://localhost:7137/api/Item/GetLookupList', {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            const itemList = response.data;
-            console.log('Item list:', itemList);
-            setItemList(itemList)
+            const apiUrl = `${baseUrl}Item/GetLookupList`;
+            const responseData = await getAPI(apiUrl, token);
+            setItemList(responseData)
         } catch (error) {
-            console.error('Error fetching item list:', error.message);
+            console.error('Error:', error.message);
         }
     }
 
@@ -149,7 +87,6 @@ const ReceiptList = ({ darkMode }) => {
         setIsModalOpen(false);
         setSelectedReceipt(null);
         setReceiptData(initialData)
-        setReceiptError(initialErrors)
     };
 
     const handleAddClick = () => {
@@ -162,9 +99,6 @@ const ReceiptList = ({ darkMode }) => {
         debugger;
         e.preventDefault();
         if (selectedReceipt) {
-            if (validateReceipt()) {
-                return;
-            }
             const extractReceiptDetailItems = () => {
                 const extractedItems = receiptData.receiptDetail.map((detail) => ({
                     receiptDetailID: detail.receiptDetailID,
@@ -188,31 +122,17 @@ const ReceiptList = ({ darkMode }) => {
                 remarks: receiptData.remarks,
                 receiptDetail: extractedItems,
             };
+
             try {
-
-                const response = await axios.put(
-                    `https://localhost:7137/api/Receipt/Update/`,
-                    updatedReceiptData,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            "Content-Type": "application/json",
-                        },
-                    }
-                );
-                const data = response.data;
-                console.log("Receipt updated successfully:");
-                setReceiptData(initialData)
+                const apiUrl = `${baseUrl}Receipt/Update/`;
+                await putAPI(apiUrl, updatedReceiptData, token);
                 fetchReceiptList();
-
+                handleCloseModal();
             } catch (error) {
-                console.error("Error updating receipt:", error.message);
-
+                console.error('Error:', error.message);
             }
         } else {
-            if (validateReceipt()) {
-                return;
-            }
+            
             const extractReceiptDetailItems = () => {
                 const extractedItems = receiptData.receiptDetail.map((detail) => ({
                     receiptDetailID: detail.receiptDetailID,
@@ -237,51 +157,28 @@ const ReceiptList = ({ darkMode }) => {
                 remarks: receiptData.remarks,
                 receiptDetail: extractedItems,
             };
-
             try {
-                const response = await axios.post(
-                    "https://localhost:7137/api/Receipt/Insert",
-                    receiptAddData,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            "Content-Type": "application/json",
-                        },
-                    }
-                );
-                const data = response.data;
-                console.log("Receipt inserted successfully:", data);
-                setReceiptData(initialData)
-
+                const apiUrl = `${baseUrl}Receipt/Insert`;
+                await postAPI(apiUrl, receiptAddData, token);
                 fetchReceiptList();
+                handleCloseModal();
             } catch (error) {
-                console.error("Error inserting receipt:", error.message);
-                throw error;
+                console.error('Error:', error.message);
             }
         }
-        handleCloseModal();
     };
 
     const fetchReceiptById = async (receiptId) => {
         try {
-            const response = await axios.get(
-                `https://localhost:7137/api/Receipt/GetById/${receiptId}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-            const receiptData = response.data;
-            setSelectedReceipt({ ...receiptData, receiptID: receiptId });
-            console.log("Receiptby id data:", receiptData);
+            const apiUrl = `${baseUrl}Receipt/GetById/${receiptId}`;
+            const responseData = await getAPI(apiUrl, token);
+            setSelectedReceipt({ ...responseData, receiptID: receiptId });
         } catch (error) {
-            console.error("Error fetching receipt data:", error.message);
+            console.error('Error:', error.message);
         }
-    };
+    }
 
     const handleEditClick = (receipt) => {
-        console.log("id recdeipt", receipt.ReceiptID);
         fetchReceiptById(receipt.ReceiptID);
 
         setIsModalOpen(true);
@@ -294,16 +191,15 @@ const ReceiptList = ({ darkMode }) => {
 
     const handleDeleteConfirmed = async () => {
         try {
-            const response = await axios.delete(`https://localhost:7137/api/Receipt/Delete/${deleteReceiptId}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
+            const apiUrl = `${baseUrl}Receipt/Delete`;
+            await deleteApi(apiUrl, deleteReceiptId, token);
             fetchReceiptList();
             setIsDeleteModalOpen(false);
-        } catch (error) {
-            console.error('Error deleting item:', error.message);
-        }
+          } catch (error) {
+            console.error("Error:", error.message);
+          }
+      
+
     };
 
 
@@ -315,8 +211,6 @@ const ReceiptList = ({ darkMode }) => {
     }, []);
 
     const handleChange = useCallback((name, value) => {
-        //    console.log("handleChange",name,value)
-        //    const { name, value } = e.target;
         setReceiptData(prevState => ({
             ...prevState,
             [name]: value
@@ -333,12 +227,10 @@ const ReceiptList = ({ darkMode }) => {
 
     return (
         <React.Fragment>
-            <h2 className={'content-block'}>Receipt List</h2>
+            <h2 className={'content-block ms-0'}>Receipts</h2>
             <LoadPanel
                 shadingColor="rgba(0,0,0,0.4)"
-                // onHiding={hideLoadPanel}
                 visible={loadPanelVisible}
-            // hideOnOutsideClick={hideOnOutsideClick}
             />
             <div className="w-100 d-flex justify-content-end">
                 <Button variant="primary" onClick={handleAddClick}>
@@ -349,25 +241,17 @@ const ReceiptList = ({ darkMode }) => {
                 dataSource={receipts}
                 showBorders={true}
                 width="100%"
-            // height={600}
-            // remoteOperations={true}
-
             >
                 <Paging defaultPageSize={10} />
                 <Pager showPageSizeSelector={true} showInfo={true} />
-                {/* <Scrolling mode='standard' /> */}
-                <Editing mode='batch'
-                    allowDeleting={true}
-                    allowUpdating={true}
-                />
                 <GroupPanel visible={true} />
                 <Sorting mode='multiple' />
                 <FilterRow visible={true} />
                 <HeaderFilter visible={true} allowSearch="true" />
-                <Column dataField='ReceiptNo' caption='Receipt No' minWidth={150} alignment="left" allowEditing={false} />
-                <Column dataField='ReceiptDate' caption='Receipt Date' minWidth={150} cellRender={data => formatReceiptDate(data.data.ReceiptDate)} dataType="date"><RequiredRule /></Column>
-                <Column dataField='NetAmount' caption='Net Amount' minWidth={250} alignment="left" allowEditing={false} />
-                <Column dataField='Remarks' caption='Remarks' minWidth={300}><RequiredRule /></Column>
+                <Column dataField='ReceiptNo' caption='Receipt No' minWidth={150} alignment="left"  />
+                <Column dataField='ReceiptDate' caption='Receipt Date' minWidth={150} cellRender={data => formatReceiptDate(data.data.ReceiptDate)} dataType="date"></Column>
+                <Column dataField='NetAmount' caption='Net Amount' minWidth={250} alignment="left" />
+                <Column dataField='Remarks' caption='Remarks' minWidth={300}></Column>
                 <Column type='buttons' minWidth={250}>
                     <GridButton text='Edit' icon='edit' onClick={(row) => handleEditClick(row.row.data)} />
                     <GridButton text='Delete' icon='trash' onClick={(row) => handleDeleteClick(row.row.data.ReceiptID)} />
@@ -384,9 +268,6 @@ const ReceiptList = ({ darkMode }) => {
                     handleDateChange={handleDateChange}
                     handleChange={handleChange}
                     itemList={itemList}
-                    receiptError={receiptError}
-                    setReceiptError={setReceiptError}
-                    darkMode={darkMode}
                 />
             }
 

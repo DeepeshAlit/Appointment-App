@@ -1,10 +1,9 @@
 import React, { useEffect } from "react";
 import { Popup } from "devextreme-react/popup";
-import TextBox, { TextBoxTypes } from "devextreme-react/text-box";
-import axios from "axios";
+import TextBox from "devextreme-react/text-box";
 import { Button } from "devextreme-react/button";
 import { Validator, RequiredRule, AsyncRule } from "devextreme-react/validator";
-import { checkDuplicateItemName } from "../../services";
+import { checkDuplicate } from "../../services";
 
 const SpecialtyModal = ({
   show,
@@ -14,12 +13,9 @@ const SpecialtyModal = ({
   handleChange,
   speciality,
   setSpeciality,
-//   specialtyError,
-//   darkMode,
-//   duplicateError,
 }) => {
   const token = localStorage.getItem("token");
-
+  const baseUrl = process.env.REACT_APP_BASE_URL;
   useEffect(() => {
     if (selectedSpecialty) {
       setSpeciality({
@@ -33,9 +29,8 @@ const SpecialtyModal = ({
   async function sendRequest(value) {
     if (!selectedSpecialty || selectedSpecialty.SpecialityName !== value ) {
     try {
-        const apiUrl = 'https://localhost:7137/api/Speciality/CheckDuplicateSpecialityName/';
-        const isDuplicate = await checkDuplicateItemName(apiUrl, value, token);
-        console.log('Is duplicate:', isDuplicate);
+        const apiUrl = `${baseUrl}Speciality/CheckDuplicateSpecialityName/`;
+        const isDuplicate = await checkDuplicate(apiUrl, value, token);
          if (isDuplicate == 200) {
           return true;
         } else {
@@ -62,7 +57,7 @@ const SpecialtyModal = ({
       hideOnOutsideClick={true}
       showCloseButton={true}
       showTitle={true}
-      title={selectedSpecialty ? "Edit" : "Add"}
+      title={selectedSpecialty ? "Edit Specialty" : "Add Specialty"}
       container=".dx-viewport"
       maxWidth={400}
       maxHeight={280}

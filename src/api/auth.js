@@ -1,30 +1,22 @@
-import defaultUser from '../utils/default-user';
-
+import axios from "axios";
 export async function signIn(email, password) {
+  const baseUrl = process.env.REACT_APP_BASE_URL;
   try {
     // Send request
     const data = {
       userName: email,
       password: password
   };
-    const response = await fetch('https://localhost:7137/api/Authenticate/Post', {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
+  const response = await axios.post(`${baseUrl}Authenticate/Post`, data, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
   });
-
-  const responseData = await response.json();
-  localStorage.setItem('token', responseData.AuthenticateToken);
-  localStorage.setItem('UserName', responseData.UserName);
-
-  console.log(responseData);
-  // navigate("/home")
-
+  localStorage.setItem('token', response.data.AuthenticateToken);
+  localStorage.setItem('UserName', response.data.UserName);
     return {
       isOk: true,
-      data: responseData
+      data: response.data
     };
   }
   catch {
