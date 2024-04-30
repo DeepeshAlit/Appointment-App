@@ -63,6 +63,19 @@ export async function deleteApi(url, id, token) {
   }
 }
 
+// export async function checkDuplicate(url, value, token) {
+//   try {
+//     const response = await axios.get(`${url}${value}`, {
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//       },
+//     });
+//     return response.status;
+//   } catch (error) {
+//     return error.response.status;
+//   }
+// }
+
 export async function checkDuplicate(url, value, token) {
   try {
     const response = await axios.get(`${url}${value}`, {
@@ -70,8 +83,39 @@ export async function checkDuplicate(url, value, token) {
         Authorization: `Bearer ${token}`,
       },
     });
-    return response.status;
+    if (response.status && response.status === 200) {
+      return {
+        isOk: true,
+        data: response,
+        statusCode: response.status,
+      };
+    } else {
+      return {
+        isOk: false,
+        // data: await response.text(),
+        statusCode: response.status,
+      };
+    }
   } catch (error) {
-    return error.response.status;
+    return {
+      isOk: false,
+      message: error,
+      // statusCode: data.status
+    };
+  }
+}
+
+export async function getById(url, id, token) {
+  try {
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    };
+    const response = await axios.get(`${url}${id}`, config);
+    return response.data;
+  } catch (error) {
+    throw error;
   }
 }

@@ -9,6 +9,7 @@ import DataGrid, {
   FilterRow,
   Pager,
   Paging,
+  Sorting,
 } from "devextreme-react/data-grid";
 import { LoadPanel } from "devextreme-react/load-panel";
 import "devextreme/data/odata/store";
@@ -30,6 +31,8 @@ const ItemList = () => {
   const deleteMessage = "Are you sure you want to delete this item?";
   const [inUseError, setInUseError] = useState(false);
   const [loadPanelVisible, setLoadPanelVisible] = useState(false);
+  const [primaryKey, setPrimaryKey] = useState(null);
+  const [focusedRowKey, setfocusedRowKey] = useState(0);
 
   useEffect(() => {
     if (!token) {
@@ -48,6 +51,8 @@ const ItemList = () => {
       console.error("Error:", error.message);
       setLoadPanelVisible(false);
     }
+    setfocusedRowKey(primaryKey);
+    setPrimaryKey(0);
   };
 
   useEffect(() => {
@@ -65,10 +70,12 @@ const ItemList = () => {
   };
 
   const handleSave = async (e) => {
+    console.log("selected",selectedItem)
+    debugger
     e.preventDefault();
     if (selectedItem) {
       const updatedItemData = {
-        itemID: selectedItem.ItemID,
+        itemID: selectedItem,
         itemName: item.itemName,
       };
       // Update Item
@@ -95,8 +102,9 @@ const ItemList = () => {
   };
 
   const handleEditClick = (item) => {
-    setSelectedItem(item);
+    // setSelectedItem(item);
     setIsModalOpen(true);
+    setSelectedItem(item.ItemID)
   };
 
   const handleDeleteClick = async (itemId) => {
@@ -135,6 +143,10 @@ const ItemList = () => {
     setInUseError(false);
   };
 
+  function onFocusedRowChanged(e) {
+    setfocusedRowKey(e.component.option("focusedRowKey"));
+  }
+
   return (
     <React.Fragment>
       <h2 className={"content-block d-flex ms-0"}>Items</h2>
@@ -145,22 +157,35 @@ const ItemList = () => {
       </div>
       <LoadPanel shadingColor="rgba(0,0,0,0.4)" visible={loadPanelVisible} />
 
-      <DataGrid dataSource={itemsList} showBorders={true}>
+      <DataGrid
+        keyExpr="ItemID"
+        dataSource={itemsList}
+        showBorders={true}
+        showRowLines={true}
+        focusedRowEnabled={true}
+        focusedRowKey={focusedRowKey}
+        wordWrapEnabled={true}
+        hoverStateEnabled={true}
+        autoNavigateToFocusedRow={true}
+        onFocusedRowChanged={onFocusedRowChanged}
+        onRowDblClick={(row)=>handleEditClick(row.data)}
+      >
         <Paging defaultPageSize={10} />
         <Pager showPageSizeSelector={true} showInfo={true} />
         <FilterRow visible={true} />
 
         <Column dataField={"ItemName"} caption={"Item Name"} minWidth={250} />
         <Column type="buttons">
-          <GridButton
+          {/* <GridButton
             text="Edit"
             icon="edit"
             onClick={(row) => handleEditClick(row.row.data)}
-          />
+          /> */}
           <GridButton
             text="Delete"
             icon="trash"
             onClick={(row) => handleDeleteClick(row.row.data.ItemID)}
+            cssClass='text-danger'
           />
         </Column>
       </DataGrid>
