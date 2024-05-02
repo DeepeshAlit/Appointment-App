@@ -16,7 +16,7 @@ import DataGrid, {
   Paging,
   Pager,
 } from "devextreme-react/data-grid";
-import { deleteApi, getAPI, postAPI, putAPI } from "../../services";
+import { deleteApi, getAPI } from "../../services";
 const DoctorList = () => {
   const baseUrl = process.env.REACT_APP_BASE_URL;
   const token = localStorage.getItem("token");
@@ -27,13 +27,10 @@ const DoctorList = () => {
   const [specialtiesList, setSpecialtiesList] = useState([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteDoctorId, setDeleteDoctorId] = useState(null);
-  const initialData = {
-    DoctorName: "",
-    SpecialityID: null,
-    Education: "",
-  };
-  const [doctor, setDoctor] = useState(initialData);
+  const [primaryKey, setPrimaryKey] = useState(null);
+  const [focusedRowKey, setfocusedRowKey] = useState(0);
   const [inUseError, setInUseError] = useState(false);
+  const [loadPanelVisible, setLoadPanelVisible] = useState(false);
   const deleteMessage = "Are you sure you want to delete this Doctor?";
 
   useEffect(() => {
@@ -53,6 +50,8 @@ const DoctorList = () => {
       console.error("Error:", error.message);
       setLoadPanelVisible(false);
     }
+    setfocusedRowKey(primaryKey);
+    setPrimaryKey(0);
   };
 
   const fetchSpecialtyList = async () => {
@@ -77,47 +76,13 @@ const DoctorList = () => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setDoctor(initialData);
-  };
-
-  const handleSaveDoctor = async (e) => {
-    e.preventDefault();
-    if (selectedDoctor) {
-      console.log("Selected Doctor", selectedDoctor);
-      const updatedDoctorData = {
-        doctorID: selectedDoctor.DoctorID,
-        doctorName: doctor.DoctorName,
-        specialityID: doctor.SpecialityID,
-        education: doctor.Education,
-      };
-      try {
-        const apiUrl = `${baseUrl}Doctor/Update/`;
-        await putAPI(apiUrl, updatedDoctorData, token);
-        fetchDoctorList();
-        handleCloseModal();
-      } catch (error) {
-        console.error("Error:", error.message);
-      }
-    } else {
-      // Add New Doctor
-      const data = {
-        doctorName: doctor?.DoctorName,
-        specialityID: doctor?.SpecialityID,
-        education: doctor?.Education,
-      };
-      try {
-        const apiUrl = `${baseUrl}Doctor/Insert`;
-        await postAPI(apiUrl, data, token);
-        fetchDoctorList();
-        handleCloseModal();
-      } catch (error) {
-        console.error("Error:", error.message);
-      }
-    }
+    fetchDoctorList();
+    fetchSpecialtyList();
+    // setDoctor(initialData);
   };
 
   const handleEditDoctor = (doctor) => {
-    setSelectedDoctor(doctor);
+    setSelectedDoctor(doctor.DoctorID);
     setIsModalOpen(true);
   };
 
@@ -143,21 +108,6 @@ const DoctorList = () => {
     }
   };
 
-  const handleChange = useCallback((name, args) => {
-    // const { name, value } = args;
-    console.log("args", name, args);
-    setDoctor((prevState) => ({
-      ...prevState,
-      [name]: args,
-    }));
-  }, []);
-
-  const handleSpecialtyChange = useCallback((args) => {
-    setDoctor((prevDoctor) => ({
-      ...prevDoctor,
-      SpecialityID: args.value,
-    }));
-  }, []);
 
   const handleDeleteModalClose = () => {
     setIsDeleteModalOpen(false);
@@ -169,7 +119,9 @@ const DoctorList = () => {
     ID: specialty.SpecialityID,
   }));
 
-  const [loadPanelVisible, setLoadPanelVisible] = useState(false);
+  function onFocusedRowChanged(e) {
+    setfocusedRowKey(e.component.option("focusedRowKey"));
+  }
 
   return (
     <React.Fragment>
@@ -182,9 +134,18 @@ const DoctorList = () => {
       <LoadPanel shadingColor="rgba(0,0,0,0.4)" visible={loadPanelVisible} />
       <DataGrid
         id="dataGrid"
+        keyExpr="DoctorID"
         allowColumnReordering={true}
         dataSource={doctorsList}
         showBorders={true}
+        showRowLines={true}
+        focusedRowEnabled={true}
+        focusedRowKey={focusedRowKey}
+        wordWrapEnabled={true}
+        hoverStateEnabled={true}
+        autoNavigateToFocusedRow={true}
+        onFocusedRowChanged={onFocusedRowChanged}
+        onRowDblClick={(row) => handleEditDoctor(row.data)}
       >
         <Paging defaultPageSize={10} />
         <Pager showPageSizeSelector={true} showInfo={true} />
@@ -216,15 +177,16 @@ const DoctorList = () => {
           minWidth={250}
         ></Column>
         <Column type="buttons" minWidth={100}>
-          <GridButton
+          {/* <GridButton
             text="Edit"
             icon="edit"
             onClick={(row) => handleEditDoctor(row.row.data)}
-          />
+          /> */}
           <GridButton
             text="Delete"
             icon="trash"
             onClick={(row) => handleDeleteDoctor(row.row.data.DoctorID)}
+            cssClass="text-danger"
           />
         </Column>
       </DataGrid>
@@ -233,13 +195,7 @@ const DoctorList = () => {
         <DoctorModal
           show={isModalOpen}
           handleClose={handleCloseModal}
-          handleSave={handleSaveDoctor}
           selectedDoctor={selectedDoctor}
-          doctor={doctor}
-          handleChange={handleChange}
-          setDoctor={setDoctor}
-          specialtiesList={specialtiesList}
-          handleSpecialtyChange={handleSpecialtyChange}
         />
       )}
 

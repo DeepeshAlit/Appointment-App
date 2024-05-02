@@ -4,7 +4,6 @@ import TextBox from "devextreme-react/text-box";
 import Button from "devextreme-react/button";
 import Validator, {
   RequiredRule,
-  AsyncRule,
   CustomRule,
 } from "devextreme-react/validator";
 import { checkDuplicate,getById } from "../../services";
@@ -22,7 +21,7 @@ const ItemModal = ({
   const baseUrl = process.env.REACT_APP_BASE_URL;
   const ValidationGroupName = "ItemPopupValidation";
 
-  async function GetItemById(id) {
+  const GetItemById =async(id)=> {
     try {
       const apiUrl = `${baseUrl}Item/GetById/`;
       const item = await getById(apiUrl, id, token);
@@ -38,32 +37,7 @@ const ItemModal = ({
     }
   }, []);
 
-  // async function sendRequest(value) {
-  //   if (!selectedItem || selectedItem.ItemName !== value) {
-  //     try {
-  //       const apiUrl =
-  //         `${baseUrl}Item/CheckDuplicateItemName/`;
-  //       const isDuplicate = await checkDuplicate(apiUrl, value, token);
-  //       if (isDuplicate == 200) {
-  //         return true;
-  //       } else {
-  //         return false;
-  //       }
-  //     } catch (error) {
-  //       console.error("Error:", error.message);
-  //     }
-  //   } else if (selectedItem.ItemName == value) {
-  //     return true;
-  //   }
-  // }
-
-  // function asyncValidation(params) {
-
-  //   return sendRequest(params.value);
-  // }
-
   const asyncItemNameValidation = async (e) => {
-    console.log("item",item)
     const value = e?.value;
     if (!selectedItem || item.ItemName !== value) {
     const apiUrl = `${baseUrl}Item/CheckDuplicateItemName/`;
@@ -109,11 +83,6 @@ const ItemModal = ({
            validationGroup={ValidationGroupName}
            >
             <RequiredRule message="Item Name is Required" />
-            {/* <AsyncRule
-              message="Item Already Exist"
-              validationCallback={asyncValidation}
-              ignoreEmptyValue={true}
-            /> */}
             <CustomRule
               message="Can't accept duplicate Item Name"
               validationCallback={asyncItemNameValidation}

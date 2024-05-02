@@ -9,6 +9,7 @@ import DataGrid, {
   Editing,
   RequiredRule as Required,
   Lookup,
+  RangeRule,
 } from "devextreme-react/data-grid";
 
 const ReceiptModal = ({
@@ -60,8 +61,8 @@ const ReceiptModal = ({
 
   // Calculate gross amount
   const calculateGrossAmount = (item) => {
-    // return item.quantity * item.rate;
-    return item?.data?.quantity * item?.data?.rate;
+    const grossAmnt = item?.data?.quantity * item?.data?.rate;
+    return grossAmnt ? grossAmnt : "";
   };
 
   // Calculate discount amount
@@ -69,7 +70,7 @@ const ReceiptModal = ({
     const disAmt =
       (item?.data?.quantity * item?.data?.rate * item?.data?.discountPercent) /
       100;
-    return disAmt;
+    return disAmt ? disAmt : "";
   }, []);
 
   // Calculate total amount
@@ -78,7 +79,7 @@ const ReceiptModal = ({
     const discountAmount = calculateDiscountAmount(item);
     const amnt = grossAmount - discountAmount;
     item["amount"] = amnt;
-    return grossAmount - discountAmount;
+    return amnt ? amnt : "";
   };
   const totalAmount = receiptData.receiptDetail.reduce(
     (total, detail) =>
@@ -180,9 +181,11 @@ const ReceiptModal = ({
           </Column>
           <Column dataField="rate" caption="Rate" dataType="number">
             <Required />
+            <RangeRule min={0} message="The Number should be greater than 0" />
           </Column>
           <Column dataField="quantity" caption="Quantity" dataType="number">
             <Required />
+            <RangeRule min={0} message="The Number should be greater than 0" />
           </Column>
           <Column
             dataField="grossAmount"
@@ -196,6 +199,7 @@ const ReceiptModal = ({
             dataType="number"
           >
             <Required />
+            <RangeRule min={0} message="The Number should be greater than 0" />
           </Column>
           <Column
             dataField="discount"

@@ -51,6 +51,8 @@ const AppointmentList = () => {
   const [patientAppointment, setPatientAppointment] = useState(initialData);
   const deleteMessage = "Are you sure you want to delete this Appointment?";
   const [loadPanelVisible, setLoadPanelVisible] = useState(false);
+  const [primaryKey, setPrimaryKey] = useState(null);
+  const [focusedRowKey, setfocusedRowKey] = useState(0);
 
   useEffect(() => {
     if (!token) {
@@ -76,6 +78,8 @@ const AppointmentList = () => {
       console.error("Error:", error.message);
       setLoadPanelVisible(false);
     }
+    setfocusedRowKey(primaryKey);
+    setPrimaryKey(0);
   };
 
   const fetchStateList = async () => {
@@ -281,6 +285,10 @@ const AppointmentList = () => {
     }));
   }, []);
 
+  function onFocusedRowChanged(e) {
+    setfocusedRowKey(e.component.option("focusedRowKey"));
+  }
+
   return (
     <React.Fragment>
       <LoadPanel shadingColor="rgba(0,0,0,0.4)" visible={loadPanelVisible} />
@@ -290,7 +298,21 @@ const AppointmentList = () => {
           Add
         </Button>
       </div>
-      <DataGrid dataSource={appointments} showBorders={true} width="100%">
+      <DataGrid
+        keyExpr="AppointmentID"
+        dataSource={appointments}
+        showBorders={true}
+        showRowLines={true}
+        allowColumnReordering={true}
+        focusedRowEnabled={true}
+        focusedRowKey={focusedRowKey}
+        wordWrapEnabled={true}
+        hoverStateEnabled={true}
+        autoNavigateToFocusedRow={true}
+        onFocusedRowChanged={onFocusedRowChanged}
+        onRowDblClick={(row) => handleEditClick(row.data)}
+        width="100%"
+      >
         <Paging defaultPageSize={10} />
         <Pager showPageSizeSelector={true} showInfo={true} />
         <GroupPanel visible={true} />
@@ -306,7 +328,6 @@ const AppointmentList = () => {
           cellRender={(data) =>
             data.value === 0 ? <td>Male</td> : <td>Female</td>
           }
-
         >
           <HeaderFilter
             allowSelectAll={true}
@@ -323,15 +344,16 @@ const AppointmentList = () => {
         />
         <Column dataField="DoctorName" caption="Doctor Name" minWidth={200} />
         <Column type="buttons" minWidth={250}>
-          <GridButton
+          {/* <GridButton
             text="Edit"
             icon="edit"
             onClick={(row) => handleEditClick(row.row.data)}
-          />
+          /> */}
           <GridButton
             text="Delete"
             icon="trash"
             onClick={(row) => handleDeleteClick(row.row.data.AppointmentID)}
+            cssClass="text-danger"
           />
         </Column>
       </DataGrid>

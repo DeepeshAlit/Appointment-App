@@ -28,6 +28,8 @@ const ReceiptList = () => {
   const [itemList, setItemList] = useState([]);
   const [deleteReceiptId, setDeleteReceiptId] = useState(null);
   const [loadPanelVisible, setLoadPanelVisible] = useState(false);
+  const [primaryKey, setPrimaryKey] = useState(null);
+  const [focusedRowKey, setfocusedRowKey] = useState(0);
 
   const initialData = {
     receiptID: 0,
@@ -57,12 +59,15 @@ const ReceiptList = () => {
     try {
       const apiUrl = `${baseUrl}Receipt/GetList`;
       const responseData = await getAPI(apiUrl, token);
+      console.log("responseList", responseData);
       setReceipts(responseData);
       setLoadPanelVisible(false);
     } catch (error) {
       console.error("Error:", error.message);
       setLoadPanelVisible(false);
     }
+    setfocusedRowKey(primaryKey);
+    setPrimaryKey(0);
   };
   const fetchItemsList = async () => {
     try {
@@ -101,9 +106,9 @@ const ReceiptList = () => {
           receiptDetailID: detail.receiptDetailID,
           receiptID: detail.receiptID,
           itemID: detail.itemID,
-          quantity: parseInt(detail.quantity),
-          rate: parseInt(detail.rate),
-          discount: parseInt(detail.discountPercent),
+          quantity: parseFloat(detail.quantity),
+          rate: parseFloat(detail.rate),
+          discount: parseFloat(detail.discountPercent),
           amount: detail.amount,
         }));
 
@@ -112,10 +117,10 @@ const ReceiptList = () => {
       const extractedItems = extractReceiptDetailItems();
       const updatedReceiptData = {
         receiptID: selectedReceipt.receiptID,
-        receiptNo: parseInt(receiptData.receiptNo),
+        receiptNo: parseFloat(receiptData.receiptNo),
         receiptDate: receiptData.receiptDate,
         doctorID: 14,
-        netAmount: parseInt(receiptData.netAmount),
+        netAmount: parseFloat(receiptData.netAmount),
         remarks: receiptData.remarks,
         receiptDetail: extractedItems,
       };
@@ -134,9 +139,9 @@ const ReceiptList = () => {
           receiptDetailID: 0,
           receiptID: 0,
           itemID: detail.itemID,
-          quantity: parseInt(detail.quantity),
-          rate: parseInt(detail.rate),
-          discount: parseInt(detail.discountPercent),
+          quantity: parseFloat(detail.quantity),
+          rate: parseFloat(detail.rate),
+          discount: parseFloat(detail.discountPercent),
           amount: detail.amount,
         }));
 
@@ -145,10 +150,10 @@ const ReceiptList = () => {
       const extractedItems = extractReceiptDetailItems();
       const receiptAddData = {
         receiptID: 0,
-        receiptNo: parseInt(receiptData.receiptNo),
+        receiptNo: parseFloat(receiptData.receiptNo),
         receiptDate: receiptData.receiptDate,
         doctorID: 14,
-        netAmount: parseInt(receiptData.netAmount),
+        netAmount: parseFloat(receiptData.netAmount),
         remarks: receiptData.remarks,
         receiptDetail: extractedItems,
       };
@@ -217,6 +222,10 @@ const ReceiptList = () => {
     setIsDeleteModalOpen(false);
   };
 
+  function onFocusedRowChanged(e) {
+    setfocusedRowKey(e.component.option("focusedRowKey"));
+  }
+
   return (
     <React.Fragment>
       <h2 className={"content-block ms-0"}>Receipts</h2>
@@ -226,7 +235,20 @@ const ReceiptList = () => {
           Add
         </Button>
       </div>
-      <DataGrid dataSource={receipts} showBorders={true} width="100%">
+      <DataGrid
+        keyExpr="ReceiptID"
+        dataSource={receipts}
+        showBorders={true}
+        width="100%"
+        showRowLines={true}
+        focusedRowEnabled={true}
+        focusedRowKey={focusedRowKey}
+        wordWrapEnabled={true}
+        hoverStateEnabled={true}
+        autoNavigateToFocusedRow={true}
+        onFocusedRowChanged={onFocusedRowChanged}
+        onRowDblClick={(row) => handleEditClick(row.data)}
+      >
         <Paging defaultPageSize={10} />
         <Pager showPageSizeSelector={true} showInfo={true} />
         <GroupPanel visible={true} />
@@ -254,15 +276,16 @@ const ReceiptList = () => {
         />
         <Column dataField="Remarks" caption="Remarks" minWidth={300}></Column>
         <Column type="buttons" minWidth={250}>
-          <GridButton
+          {/* <GridButton
             text="Edit"
             icon="edit"
             onClick={(row) => handleEditClick(row.row.data)}
-          />
+          /> */}
           <GridButton
             text="Delete"
             icon="trash"
             onClick={(row) => handleDeleteClick(row.row.data.ReceiptID)}
+            cssClass="text-danger"
           />
         </Column>
       </DataGrid>
