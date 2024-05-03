@@ -11,6 +11,8 @@
     "devextreme": "23.2.4",
     "devextreme-cli": "^1.6.7",
     "devextreme-react": "23.2.4",
+    "exceljs": "^4.4.0",
+    "file-saver": "^2.0.5",
     "moment": "^2.30.1",
     "react": "^18.2.0",
     "react-app-polyfill": "^1.0.0",

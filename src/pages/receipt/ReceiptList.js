@@ -1,8 +1,7 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { Button } from "devextreme-react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import ReceiptModal from "./ReceiptModal";
 import { useNavigate } from "react-router-dom";
-import { DeleteConfirmationModal } from "../../components";
+import { DeleteConfirmationModal, Header } from "../../components";
 import DataGrid, {
   Column,
   Button as GridButton,
@@ -10,8 +9,8 @@ import DataGrid, {
   Sorting,
   FilterRow,
   HeaderFilter,
-  Paging,
-  Pager,
+  Scrolling,
+  ColumnChooser,
 } from "devextreme-react/data-grid";
 import { LoadPanel } from "devextreme-react/load-panel";
 import moment from "moment";
@@ -30,6 +29,7 @@ const ReceiptList = () => {
   const [loadPanelVisible, setLoadPanelVisible] = useState(false);
   const [primaryKey, setPrimaryKey] = useState(null);
   const [focusedRowKey, setfocusedRowKey] = useState(0);
+  const DataGridRef = useRef(null);
 
   const initialData = {
     receiptID: 0,
@@ -228,67 +228,73 @@ const ReceiptList = () => {
 
   return (
     <React.Fragment>
-      <h2 className={"content-block ms-0"}>Receipts</h2>
-      <LoadPanel shadingColor="rgba(0,0,0,0.4)" visible={loadPanelVisible} />
-      <div className="w-100 d-flex justify-content-end">
-        <Button variant="primary" onClick={handleAddClick}>
-          Add
-        </Button>
-      </div>
-      <DataGrid
-        keyExpr="ReceiptID"
-        dataSource={receipts}
-        showBorders={true}
-        width="100%"
-        showRowLines={true}
-        focusedRowEnabled={true}
-        focusedRowKey={focusedRowKey}
-        wordWrapEnabled={true}
-        hoverStateEnabled={true}
-        autoNavigateToFocusedRow={true}
-        onFocusedRowChanged={onFocusedRowChanged}
-        onRowDblClick={(row) => handleEditClick(row.data)}
-      >
-        <Paging defaultPageSize={10} />
-        <Pager showPageSizeSelector={true} showInfo={true} />
-        <GroupPanel visible={true} />
-        <Sorting mode="multiple" />
-        <FilterRow visible={true} />
-        <HeaderFilter visible={true} allowSearch="true" />
-        <Column
-          dataField="ReceiptNo"
-          caption="Receipt No"
-          minWidth={150}
-          alignment="left"
-        />
-        <Column
-          dataField="ReceiptDate"
-          caption="Receipt Date"
-          minWidth={150}
-          cellRender={(data) => formatReceiptDate(data.data.ReceiptDate)}
-          dataType="date"
-        ></Column>
-        <Column
-          dataField="NetAmount"
-          caption="Net Amount"
-          minWidth={250}
-          alignment="left"
-        />
-        <Column dataField="Remarks" caption="Remarks" minWidth={300}></Column>
-        <Column type="buttons" minWidth={250}>
-          {/* <GridButton
+      <Header
+        title={"Receipts"}
+        handleAdd={handleAddClick}
+        GetRecord={fetchReceiptList}
+        dataGridRef={DataGridRef}
+      />
+      <div className="mx-2 mt-2">
+        <LoadPanel shadingColor="rgba(0,0,0,0.4)" visible={loadPanelVisible} />
+        <DataGrid
+          keyExpr="ReceiptID"
+          ref={DataGridRef}
+          dataSource={receipts}
+          showBorders={true}
+          width="100%"
+          showRowLines={true}
+          focusedRowEnabled={true}
+          focusedRowKey={focusedRowKey}
+          wordWrapEnabled={true}
+          hoverStateEnabled={true}
+          autoNavigateToFocusedRow={true}
+          onFocusedRowChanged={onFocusedRowChanged}
+          onRowDblClick={(row) => handleEditClick(row.data)}
+          height={450}
+        >
+          <Scrolling mode="virtual" />
+          <ColumnChooser enabled={true} mode="dragAndDrop" />
+          {/* <Paging defaultPageSize={10} /> */}
+          {/* <Pager showPageSizeSelector={true} showInfo={true} /> */}
+          <GroupPanel visible={true} />
+          <Sorting mode="multiple" />
+          <FilterRow visible={true} />
+          <HeaderFilter visible={true} allowSearch="true" />
+          <Column
+            dataField="ReceiptNo"
+            caption="Receipt No"
+            minWidth={150}
+            alignment="left"
+          />
+          <Column
+            dataField="ReceiptDate"
+            caption="Receipt Date"
+            minWidth={250}
+            cellRender={(data) => formatReceiptDate(data.data.ReceiptDate)}
+            dataType="date"
+          ></Column>
+          <Column
+            dataField="NetAmount"
+            caption="Net Amount"
+            minWidth={250}
+            alignment="left"
+          />
+          <Column dataField="Remarks" caption="Remarks" minWidth={300}></Column>
+          <Column type="buttons">
+            {/* <GridButton
             text="Edit"
             icon="edit"
             onClick={(row) => handleEditClick(row.row.data)}
           /> */}
-          <GridButton
-            text="Delete"
-            icon="trash"
-            onClick={(row) => handleDeleteClick(row.row.data.ReceiptID)}
-            cssClass="text-danger"
-          />
-        </Column>
-      </DataGrid>
+            <GridButton
+              text="Delete"
+              icon="trash"
+              onClick={(row) => handleDeleteClick(row.row.data.ReceiptID)}
+              cssClass="text-danger"
+            />
+          </Column>
+        </DataGrid>
+      </div>
       {isModalOpen && (
         <ReceiptModal
           show={isModalOpen}

@@ -1,8 +1,7 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { Button } from "devextreme-react";
+import React, { useEffect, useRef, useState } from "react";
 import SpecialtyModal from "./SpecialtyModal";
 import { useNavigate } from "react-router-dom";
-import { DeleteConfirmationModal } from "../../components";
+import { DeleteConfirmationModal, Header } from "../../components";
 import DataGrid, {
   Column,
   Button as GridButton,
@@ -10,9 +9,10 @@ import DataGrid, {
   FilterRow,
   Pager,
   Paging,
+  Scrolling,
 } from "devextreme-react/data-grid";
 import { LoadPanel } from "devextreme-react/load-panel";
-import { deleteApi, getAPI, postAPI, putAPI } from "../../services";
+import { deleteApi, getAPI } from "../../services";
 
 const SpecialtyList = () => {
   const token = localStorage.getItem("token");
@@ -28,6 +28,7 @@ const SpecialtyList = () => {
   const [loadPanelVisible, setLoadPanelVisible] = useState(false);
   const [focusedRowKey, setfocusedRowKey] = useState(0);
   const [primaryKey, setPrimaryKey] = useState(null);
+  const DataGridRef = useRef(null);
 
   useEffect(() => {
     if (!token) {
@@ -104,14 +105,16 @@ const SpecialtyList = () => {
 
   return (
     <React.Fragment>
+       <Header
+             title={"Specialities"}
+            handleAdd={handleAddClick}
+            GetRecord={getSpecialityList}
+            dataGridRef={DataGridRef}
+          />
+          <div className="mx-2 mt-2">
       <LoadPanel shadingColor="rgba(0,0,0,0.4)" visible={loadPanelVisible} />
-      <h2 className={"content-block ms-0"}>Specialities</h2>
-      <div className="w-100 d-flex justify-content-end mb-3">
-        <Button variant="primary" onClick={handleAddClick}>
-          Add
-        </Button>
-      </div>
       <DataGrid
+        ref={DataGridRef}
         dataSource={specialties}
         keyExpr="SpecialityID"
         showBorders={true}
@@ -123,9 +126,11 @@ const SpecialtyList = () => {
         autoNavigateToFocusedRow={true}
         onFocusedRowChanged={onFocusedRowChanged}
         onRowDblClick={(row) => handleEditClick(row.data)}
+        height={450}
       >
-        <Paging defaultPageSize={5} />
-        <Pager showPageSizeSelector={true} showInfo={true} />
+        <Scrolling mode="virtual"></Scrolling>
+        {/* <Paging defaultPageSize={5} /> */}
+        {/* <Pager showPageSizeSelector={true} showInfo={true} /> */}
         <Sorting mode="single" />
         <FilterRow visible={true} />
         <Column
@@ -163,6 +168,7 @@ const SpecialtyList = () => {
         deleteMessage={deleteMessage}
         inUseError={inUseError}
       />
+      </div>
     </React.Fragment>
   );
 };

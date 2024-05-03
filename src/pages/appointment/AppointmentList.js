@@ -1,8 +1,7 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { Button } from "devextreme-react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import AppointmentModal from "./AppointmentModal";
 import { useNavigate } from "react-router-dom";
-import { DeleteConfirmationModal } from "../../components";
+import { DeleteConfirmationModal, Header } from "../../components";
 import moment from "moment";
 import DataGrid, {
   Column,
@@ -13,6 +12,7 @@ import DataGrid, {
   HeaderFilter,
   Pager,
   Paging,
+  ColumnChooser,
 } from "devextreme-react/data-grid";
 import { LoadPanel } from "devextreme-react/load-panel";
 import { deleteApi, getAPI, postAPI, putAPI } from "../../services";
@@ -53,6 +53,7 @@ const AppointmentList = () => {
   const [loadPanelVisible, setLoadPanelVisible] = useState(false);
   const [primaryKey, setPrimaryKey] = useState(null);
   const [focusedRowKey, setfocusedRowKey] = useState(0);
+  const DataGridRef = useRef(null);
 
   useEffect(() => {
     if (!token) {
@@ -291,72 +292,77 @@ const AppointmentList = () => {
 
   return (
     <React.Fragment>
-      <LoadPanel shadingColor="rgba(0,0,0,0.4)" visible={loadPanelVisible} />
-      <h2 className={"content-block ms-0"}>Appointments</h2>
-      <div className="w-100 d-flex justify-content-end">
-        <Button variant="primary" onClick={handleAddClick}>
-          Add
-        </Button>
-      </div>
-      <DataGrid
-        keyExpr="AppointmentID"
-        dataSource={appointments}
-        showBorders={true}
-        showRowLines={true}
-        allowColumnReordering={true}
-        focusedRowEnabled={true}
-        focusedRowKey={focusedRowKey}
-        wordWrapEnabled={true}
-        hoverStateEnabled={true}
-        autoNavigateToFocusedRow={true}
-        onFocusedRowChanged={onFocusedRowChanged}
-        onRowDblClick={(row) => handleEditClick(row.data)}
-        width="100%"
-      >
-        <Paging defaultPageSize={10} />
-        <Pager showPageSizeSelector={true} showInfo={true} />
-        <GroupPanel visible={true} />
-        <Sorting mode="multiple" />
-        <FilterRow visible={true} />
-        <HeaderFilter visible={true} allowSearch="true" />
-        <Column dataField="FullName" caption="Full Name" minWidth={200} />
-        <Column
-          dataField="Gender"
-          caption="Gender"
-          minWidth={200}
-          alignment="left"
-          cellRender={(data) =>
-            data.value === 0 ? <td>Male</td> : <td>Female</td>
-          }
+      <Header
+        title={"Appointments"}
+        handleAdd={handleAddClick}
+        GetRecord={fetchPatientList}
+        dataGridRef={DataGridRef}
+      />
+      <div className="mt-2 mx-2">
+        <LoadPanel shadingColor="rgba(0,0,0,0.4)" visible={loadPanelVisible} />
+        <DataGrid
+          keyExpr="AppointmentID"
+          ref={DataGridRef}
+          dataSource={appointments}
+          showBorders={true}
+          showRowLines={true}
+          allowColumnReordering={true}
+          focusedRowEnabled={true}
+          focusedRowKey={focusedRowKey}
+          wordWrapEnabled={true}
+          hoverStateEnabled={true}
+          autoNavigateToFocusedRow={true}
+          onFocusedRowChanged={onFocusedRowChanged}
+          onRowDblClick={(row) => handleEditClick(row.data)}
+          width="100%"
+          height={450}
         >
-          <HeaderFilter
-            allowSelectAll={true}
-            dataSource={[
-              { value: 0, text: "Male" },
-              { value: 1, text: "Female" },
-            ]}
-          ></HeaderFilter>
-        </Column>
-        <Column
-          dataField="SpecialityName"
-          caption="Speciality Name"
-          minWidth={200}
-        />
-        <Column dataField="DoctorName" caption="Doctor Name" minWidth={200} />
-        <Column type="buttons" minWidth={250}>
-          {/* <GridButton
+          <ColumnChooser enabled={true} mode="dragAndDrop" />
+          {/* <Paging defaultPageSize={10} /> */}
+          {/* <Pager showPageSizeSelector={true} showInfo={true} /> */}
+          <GroupPanel visible={true} />
+          <Sorting mode="multiple" />
+          <FilterRow visible={true} />
+          <HeaderFilter visible={true} allowSearch="true" />
+          <Column dataField="FullName" caption="Full Name" minWidth={200} />
+          <Column
+            dataField="Gender"
+            caption="Gender"
+            minWidth={200}
+            alignment="left"
+            cellRender={(data) =>
+              data.value === 0 ? <td>Male</td> : <td>Female</td>
+            }
+          >
+            <HeaderFilter
+              allowSelectAll={true}
+              dataSource={[
+                { value: 0, text: "Male" },
+                { value: 1, text: "Female" },
+              ]}
+            ></HeaderFilter>
+          </Column>
+          <Column
+            dataField="SpecialityName"
+            caption="Speciality Name"
+            minWidth={200}
+          />
+          <Column dataField="DoctorName" caption="Doctor Name" minWidth={200} />
+          <Column type="buttons" minWidth={250}>
+            {/* <GridButton
             text="Edit"
             icon="edit"
             onClick={(row) => handleEditClick(row.row.data)}
           /> */}
-          <GridButton
-            text="Delete"
-            icon="trash"
-            onClick={(row) => handleDeleteClick(row.row.data.AppointmentID)}
-            cssClass="text-danger"
-          />
-        </Column>
-      </DataGrid>
+            <GridButton
+              text="Delete"
+              icon="trash"
+              onClick={(row) => handleDeleteClick(row.row.data.AppointmentID)}
+              cssClass="text-danger"
+            />
+          </Column>
+        </DataGrid>
+      </div>
 
       {isModalOpen && (
         <AppointmentModal

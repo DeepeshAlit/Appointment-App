@@ -1,8 +1,7 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { Button } from "devextreme-react";
+import React, { useEffect, useRef, useState } from "react";
 import DoctorModal from "./DoctorModal";
 import { useNavigate } from "react-router-dom";
-import { DeleteConfirmationModal } from "../../components";
+import { DeleteConfirmationModal, Header } from "../../components";
 import { LoadPanel } from "devextreme-react/load-panel";
 import DataGrid, {
   Column,
@@ -15,6 +14,8 @@ import DataGrid, {
   Lookup,
   Paging,
   Pager,
+  Scrolling,
+  ColumnChooser,
 } from "devextreme-react/data-grid";
 import { deleteApi, getAPI } from "../../services";
 const DoctorList = () => {
@@ -32,6 +33,7 @@ const DoctorList = () => {
   const [inUseError, setInUseError] = useState(false);
   const [loadPanelVisible, setLoadPanelVisible] = useState(false);
   const deleteMessage = "Are you sure you want to delete this Doctor?";
+  const DataGridRef = useRef(null);
 
   useEffect(() => {
     if (!token) {
@@ -108,7 +110,6 @@ const DoctorList = () => {
     }
   };
 
-
   const handleDeleteModalClose = () => {
     setIsDeleteModalOpen(false);
     setInUseError(false);
@@ -125,87 +126,93 @@ const DoctorList = () => {
 
   return (
     <React.Fragment>
-      <h2 className={"content-block ms-0"}>Doctors</h2>
-      <div className="w-100 d-flex justify-content-end my-2">
-        <Button variant="primary" onClick={handleAddClick}>
-          Add
-        </Button>
-      </div>
-      <LoadPanel shadingColor="rgba(0,0,0,0.4)" visible={loadPanelVisible} />
-      <DataGrid
-        id="dataGrid"
-        keyExpr="DoctorID"
-        allowColumnReordering={true}
-        dataSource={doctorsList}
-        showBorders={true}
-        showRowLines={true}
-        focusedRowEnabled={true}
-        focusedRowKey={focusedRowKey}
-        wordWrapEnabled={true}
-        hoverStateEnabled={true}
-        autoNavigateToFocusedRow={true}
-        onFocusedRowChanged={onFocusedRowChanged}
-        onRowDblClick={(row) => handleEditDoctor(row.data)}
-      >
-        <Paging defaultPageSize={10} />
-        <Pager showPageSizeSelector={true} showInfo={true} />
-
-        <Grouping autoExpandAll={true} />
-        <GroupPanel visible={true} />
-        <Sorting mode="multiple" />
-        <FilterRow visible={true} />
-        <HeaderFilter visible={true} allowSearch="true" />
-        <Column
-          dataField="DoctorName"
-          caption="Doctor Name"
-          minWidth={250}
-        ></Column>
-        <Column
-          dataField="SpecialityID"
-          caption="Speciality Name"
-          minWidth={250}
+      <Header
+        title={"Doctors"}
+        handleAdd={handleAddClick}
+        GetRecord={fetchDoctorList}
+        dataGridRef={DataGridRef}
+      />
+      <div className="mx-2 mt-2">
+        <LoadPanel shadingColor="rgba(0,0,0,0.4)" visible={loadPanelVisible} />
+        <DataGrid
+          id="dataGrid"
+          keyExpr="DoctorID"
+          ref={DataGridRef}
+          allowColumnReordering={true}
+          dataSource={doctorsList}
+          showBorders={true}
+          showRowLines={true}
+          focusedRowEnabled={true}
+          focusedRowKey={focusedRowKey}
+          wordWrapEnabled={true}
+          hoverStateEnabled={true}
+          autoNavigateToFocusedRow={true}
+          onFocusedRowChanged={onFocusedRowChanged}
+          onRowDblClick={(row) => handleEditDoctor(row.data)}
+          height={450}
         >
-          <Lookup
-            dataSource={formattedSpecialtyOptions}
-            displayExpr="Name"
-            valueExpr="ID"
-          />
-        </Column>
-        <Column
-          dataField="Education"
-          caption="Education"
-          minWidth={250}
-        ></Column>
-        <Column type="buttons" minWidth={100}>
-          {/* <GridButton
+          <ColumnChooser enabled={true} mode="dragAndDrop" />
+          <Scrolling mode="virtual"></Scrolling>
+          {/* <Paging defaultPageSize={10} /> */}
+          {/* <Pager showPageSizeSelector={true} showInfo={true} /> */}
+
+          <Grouping autoExpandAll={true} />
+          <GroupPanel visible={true} />
+          <Sorting mode="multiple" />
+          <FilterRow visible={true} />
+          <HeaderFilter visible={true} allowSearch="true" />
+          <Column
+            dataField="DoctorName"
+            caption="Doctor Name"
+            minWidth={250}
+          ></Column>
+          <Column
+            dataField="SpecialityID"
+            caption="Speciality Name"
+            minWidth={250}
+          >
+            <Lookup
+              dataSource={formattedSpecialtyOptions}
+              displayExpr="Name"
+              valueExpr="ID"
+            />
+          </Column>
+          <Column
+            dataField="Education"
+            caption="Education"
+            minWidth={250}
+          ></Column>
+          <Column type="buttons" minWidth={100}>
+            {/* <GridButton
             text="Edit"
             icon="edit"
             onClick={(row) => handleEditDoctor(row.row.data)}
           /> */}
-          <GridButton
-            text="Delete"
-            icon="trash"
-            onClick={(row) => handleDeleteDoctor(row.row.data.DoctorID)}
-            cssClass="text-danger"
+            <GridButton
+              text="Delete"
+              icon="trash"
+              onClick={(row) => handleDeleteDoctor(row.row.data.DoctorID)}
+              cssClass="text-danger"
+            />
+          </Column>
+        </DataGrid>
+
+        {isModalOpen && (
+          <DoctorModal
+            show={isModalOpen}
+            handleClose={handleCloseModal}
+            selectedDoctor={selectedDoctor}
           />
-        </Column>
-      </DataGrid>
+        )}
 
-      {isModalOpen && (
-        <DoctorModal
-          show={isModalOpen}
-          handleClose={handleCloseModal}
-          selectedDoctor={selectedDoctor}
+        <DeleteConfirmationModal
+          show={isDeleteModalOpen}
+          handleClose={handleDeleteModalClose}
+          handleDelete={handleDeleteConfirmed}
+          deleteMessage={deleteMessage}
+          inUseError={inUseError}
         />
-      )}
-
-      <DeleteConfirmationModal
-        show={isDeleteModalOpen}
-        handleClose={handleDeleteModalClose}
-        handleDelete={handleDeleteConfirmed}
-        deleteMessage={deleteMessage}
-        inUseError={inUseError}
-      />
+      </div>
     </React.Fragment>
   );
 };

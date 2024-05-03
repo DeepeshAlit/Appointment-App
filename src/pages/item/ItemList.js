@@ -1,19 +1,17 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { Button } from "devextreme-react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import ItemModal from "./ItemModal";
 import { useNavigate } from "react-router-dom";
-import { DeleteConfirmationModal } from "../../components";
+import { DeleteConfirmationModal, Header } from "../../components";
 import DataGrid, {
   Column,
   Button as GridButton,
   FilterRow,
-  Pager,
-  Paging,
-  Sorting,
+  Scrolling,
 } from "devextreme-react/data-grid";
 import { LoadPanel } from "devextreme-react/load-panel";
 import "devextreme/data/odata/store";
 import { deleteApi, getAPI, postAPI, putAPI } from "../../services";
+import { useScreenSize } from "../../utils/media-query";
 
 const ItemList = () => {
   const baseUrl = process.env.REACT_APP_BASE_URL;
@@ -33,6 +31,8 @@ const ItemList = () => {
   const [loadPanelVisible, setLoadPanelVisible] = useState(false);
   const [primaryKey, setPrimaryKey] = useState(null);
   const [focusedRowKey, setfocusedRowKey] = useState(0);
+  const { isXSmall } = useScreenSize();
+  const DataGridRef = useRef(null);
 
   useEffect(() => {
     if (!token) {
@@ -70,8 +70,6 @@ const ItemList = () => {
   };
 
   const handleSave = async (e) => {
-    console.log("selected",selectedItem)
-    debugger
     e.preventDefault();
     if (selectedItem) {
       const updatedItemData = {
@@ -104,7 +102,7 @@ const ItemList = () => {
   const handleEditClick = (item) => {
     // setSelectedItem(item);
     setIsModalOpen(true);
-    setSelectedItem(item.ItemID)
+    setSelectedItem(item.ItemID);
   };
 
   const handleDeleteClick = async (itemId) => {
@@ -149,64 +147,72 @@ const ItemList = () => {
 
   return (
     <React.Fragment>
-      <h2 className={"content-block d-flex ms-0"}>Items</h2>
-      <div className="w-100 d-flex justify-content-end mb-3">
-        <Button variant="primary" onClick={handleAddClick}>
-          Add
-        </Button>
-      </div>
-      <LoadPanel shadingColor="rgba(0,0,0,0.4)" visible={loadPanelVisible} />
+      <Header
+        title={"Items"}
+        menuToggleEnabled={isXSmall}
+        handleAdd={handleAddClick}
+        GetRecord={getItemsList}
+        dataGridRef={DataGridRef}
+      />
+      <div className="mx-2">
+        <LoadPanel shadingColor="rgba(0,0,0,0.4)" visible={loadPanelVisible} />
 
-      <DataGrid
-        keyExpr="ItemID"
-        dataSource={itemsList}
-        showBorders={true}
-        showRowLines={true}
-        focusedRowEnabled={true}
-        focusedRowKey={focusedRowKey}
-        wordWrapEnabled={true}
-        hoverStateEnabled={true}
-        autoNavigateToFocusedRow={true}
-        onFocusedRowChanged={onFocusedRowChanged}
-        onRowDblClick={(row)=>handleEditClick(row.data)}
-      >
-        <Paging defaultPageSize={10} />
-        <Pager showPageSizeSelector={true} showInfo={true} />
-        <FilterRow visible={true} />
+        <DataGrid
+          keyExpr="ItemID"
+          ref={DataGridRef}
+          dataSource={itemsList}
+          showBorders={true}
+          showRowLines={true}
+          focusedRowEnabled={true}
+          focusedRowKey={focusedRowKey}
+          wordWrapEnabled={true}
+          hoverStateEnabled={true}
+          autoNavigateToFocusedRow={true}
+          onFocusedRowChanged={onFocusedRowChanged}
+          onRowDblClick={(row) => handleEditClick(row.data)}
+          className="mt-2"
+          height={450}
+        >
+          <Scrolling mode="virtual"></Scrolling>
+          {/* <Paging defaultPageSize={5}  /> */}
+          {/* <Pager showPageSizeSelector={true} showInfo={true}  /> */}
+          <FilterRow visible={true} />
 
-        <Column dataField={"ItemName"} caption={"Item Name"} minWidth={250} />
-        <Column type="buttons">
-          {/* <GridButton
+          <Column dataField={"ItemName"} caption={"Item Name"} minWidth={250} />
+          <Column type="buttons">
+            {/* <GridButton
             text="Edit"
             icon="edit"
             onClick={(row) => handleEditClick(row.row.data)}
           /> */}
-          <GridButton
-            text="Delete"
-            icon="trash"
-            onClick={(row) => handleDeleteClick(row.row.data.ItemID)}
-            cssClass='text-danger'
+            <GridButton
+              text="Delete"
+              icon="trash"
+              onClick={(row) => handleDeleteClick(row.row.data.ItemID)}
+              cssClass="text-danger"
+            />
+          </Column>
+        </DataGrid>
+
+        {isModalOpen && (
+          <ItemModal
+            show={isModalOpen}
+            handleClose={handleCloseModal}
+            handleSave={handleSave}
+            selectedItem={selectedItem}
+            item={item}
+            setItem={setItem}
+            handleChange={handleChange}
           />
-        </Column>
-      </DataGrid>
-      {isModalOpen && (
-        <ItemModal
-          show={isModalOpen}
-          handleClose={handleCloseModal}
-          handleSave={handleSave}
-          selectedItem={selectedItem}
-          item={item}
-          setItem={setItem}
-          handleChange={handleChange}
+        )}
+        <DeleteConfirmationModal
+          show={isDeleteModalOpen}
+          handleClose={handleDeleteModalClose}
+          handleDelete={handleDeleteConfirmed}
+          deleteMessage={deleteMessage}
+          inUseError={inUseError}
         />
-      )}
-      <DeleteConfirmationModal
-        show={isDeleteModalOpen}
-        handleClose={handleDeleteModalClose}
-        handleDelete={handleDeleteConfirmed}
-        deleteMessage={deleteMessage}
-        inUseError={inUseError}
-      />
+      </div>
     </React.Fragment>
   );
 };
