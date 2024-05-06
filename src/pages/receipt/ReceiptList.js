@@ -96,43 +96,52 @@ const ReceiptList = () => {
   };
 
   const handleSave = async (e) => {
+    debugger
     if (!receiptData.receiptDetail.length) {
-      alert("Please add row before Save.");
+      alert("Please add row before Save.","Receipt");
     }
-    e.preventDefault();
+    // e.preventDefault();
     if (selectedReceipt) {
-      const extractReceiptDetailItems = () => {
-        const extractedItems = receiptData.receiptDetail.map((detail) => ({
-          receiptDetailID: detail.receiptDetailID,
-          receiptID: detail.receiptID,
-          itemID: detail.itemID,
-          quantity: parseFloat(detail.quantity),
-          rate: parseFloat(detail.rate),
-          discount: parseFloat(detail.discountPercent),
-          amount: detail.amount,
-        }));
-
-        return extractedItems;
-      };
-      const extractedItems = extractReceiptDetailItems();
-      const updatedReceiptData = {
-        receiptID: selectedReceipt.receiptID,
-        receiptNo: parseFloat(receiptData.receiptNo),
-        receiptDate: receiptData.receiptDate,
-        doctorID: 14,
-        netAmount: parseFloat(receiptData.netAmount),
-        remarks: receiptData.remarks,
-        receiptDetail: extractedItems,
-      };
-
-      try {
-        const apiUrl = `${baseUrl}Receipt/Update/`;
-        await putAPI(apiUrl, updatedReceiptData, token);
-        fetchReceiptList();
-        handleCloseModal();
-      } catch (error) {
-        console.error("Error:", error.message);
-      }
+      setTimeout(async()=>{
+        const extractReceiptDetailItems = () => {
+          const extractedItems = receiptData.receiptDetail.map((detail) => ({
+            receiptDetailID: detail.receiptDetailID,
+            receiptID: detail.receiptID,
+            itemID: detail.itemID,
+            quantity: parseFloat(detail.quantity),
+            rate: parseFloat(detail.rate),
+            discount: parseFloat(detail.discountPercent),
+            amount: detail.amount,
+          }));
+  
+          return extractedItems;
+        };
+        const extractedItems = extractReceiptDetailItems();
+        const updatedReceiptData = {
+          receiptID: selectedReceipt.receiptID,
+          receiptNo: parseFloat(receiptData.receiptNo),
+          receiptDate: receiptData.receiptDate,
+          doctorID: 14,
+          netAmount: parseFloat(receiptData.receiptDetail.reduce(
+            (total, detail) =>
+              total +
+              detail.rate * detail.quantity -
+              (detail.quantity * detail.rate * detail.discountPercent) / 100,
+            0
+          )),
+          remarks: receiptData.remarks,
+          receiptDetail: extractedItems,
+        };
+  
+        try {
+          const apiUrl = `${baseUrl}Receipt/Update/`;
+          await putAPI(apiUrl, updatedReceiptData, token);
+          fetchReceiptList();
+          handleCloseModal();
+        } catch (error) {
+          console.error("Error:", error.message);
+        }
+      },500)
     } else {
       const extractReceiptDetailItems = () => {
         const extractedItems = receiptData.receiptDetail.map((detail) => ({
@@ -249,7 +258,7 @@ const ReceiptList = () => {
           hoverStateEnabled={true}
           autoNavigateToFocusedRow={true}
           onFocusedRowChanged={onFocusedRowChanged}
-          onRowDblClick={(row) => handleEditClick(row.data)}
+          // onRowDblClick={(row) => handleEditClick(row.data)}
           height={450}
         >
           <Scrolling mode="virtual" />
@@ -276,16 +285,16 @@ const ReceiptList = () => {
           <Column
             dataField="NetAmount"
             caption="Net Amount"
-            minWidth={250}
+            minWidth={200}
             alignment="left"
           />
           <Column dataField="Remarks" caption="Remarks" minWidth={300}></Column>
           <Column type="buttons">
-            {/* <GridButton
+            <GridButton
             text="Edit"
             icon="edit"
             onClick={(row) => handleEditClick(row.row.data)}
-          /> */}
+          />
             <GridButton
               text="Delete"
               icon="trash"

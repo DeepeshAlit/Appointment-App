@@ -11,6 +11,7 @@ import DataGrid, {
   Lookup,
   RangeRule,
 } from "devextreme-react/data-grid";
+import PopupHeader from "../../layouts/popup-header-footer/PopupHeader";
 
 const ReceiptModal = ({
   show,
@@ -23,10 +24,13 @@ const ReceiptModal = ({
   setReceiptData,
   itemList,
 }) => {
+
+  const ValidationGroupName = "ReceiptModalValidation";
   const formattedItemOptions = itemList.map((item) => ({
     Name: item.ItemName,
     ID: item.ItemID,
   }));
+
 
   const dataDetail = selectedReceipt?.ReceiptDetail.map((item) => {
     return {
@@ -81,6 +85,7 @@ const ReceiptModal = ({
     item["amount"] = amnt;
     return amnt ? amnt : "";
   };
+
   const totalAmount = receiptData.receiptDetail.reduce(
     (total, detail) =>
       total +
@@ -92,12 +97,15 @@ const ReceiptModal = ({
     (total, detail) => total + parseInt(detail.quantity),
     0
   );
+  console.log("totalAmount",totalAmount)
 
   useEffect(() => {
+    debugger
     setReceiptData({
       ...receiptData,
       netAmount: totalAmount,
     });
+    console.log("dataREceipt",receiptData)
   }, [totalAmount]);
 
   const now = new Date();
@@ -116,6 +124,24 @@ const ReceiptModal = ({
     });
   };
 
+  const handleReceiptSave=(e)=>{
+    e.preventDefault();
+    handleSave();
+  }
+
+  const PopupTitle = () => {
+    return (
+      <>
+        <PopupHeader
+          ValidationGroupName={ValidationGroupName}
+          onClosePopup={handleClose}
+          title={[<span key={"header_title"} className="base-accent-text">{selectedReceipt?"Edit " : "Add "}</span>, "Receipt"]}
+          onSubmit={handleSave}
+        />
+      </>
+    )
+  }
+
   return (
     <Popup
       visible={show}
@@ -124,12 +150,15 @@ const ReceiptModal = ({
       hideOnOutsideClick={true}
       showCloseButton={true}
       showTitle={true}
-      title={selectedReceipt ? "Edit Receipt" : "Add Receipt"}
+      // title={selectedReceipt ? "Edit Receipt" : "Add Receipt"}
+      titleRender={PopupTitle}
       maxWidth={850}
       maxHeight={"95vh"}
       height={560}
     >
-      <form onSubmit={handleSave}>
+      <form
+       onSubmit={handleReceiptSave}
+       >
         <div className="d-flex justify-content-between my-2">
           <TextBox
             name="receiptNo"
@@ -245,12 +274,11 @@ const ReceiptModal = ({
             maxLength={40}
             validationMessagePosition="down"
           >
-            <Validator>
+            <Validator validationGroup={ValidationGroupName}>
               <RequiredRule message="Please Enter Remarks" />
             </Validator>
           </TextBox>
         </div>
-
         <div className="d-flex justify-content-end gap-2 mt-3">
           <Button
             text="Cancel"
@@ -263,9 +291,12 @@ const ReceiptModal = ({
             text={selectedReceipt ? "Update" : "Save"}
             type="default"
             stylingMode="contained"
+            validationGroup={ValidationGroupName}
           />
         </div>
+        
       </form>
+     
     </Popup>
   );
 };

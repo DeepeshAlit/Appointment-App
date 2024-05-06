@@ -1,0 +1,30 @@
+@import "../../themes/generated/variables.base.scss";
+
+.popup_header{
+    background-color: #f4f6f6;
+    .dx-toolbar{
+        background-color:#f4f6f6;
+    }
+    .remove-icon{
+        
+       .dx-button-content{
+          padding:2px !important;
+        }
+        .dx-icon{
+            font-size: 15px !important; 
+        }
+    }
+    .save-icon{
+        .dx-button-content{
+            padding:3px !important;
+            width: 26px;
+            height: 32px;
+            line-height: 26px;
+            
+          }
+          .dx-icon{
+            font-size: 15px !important; 
+        }
+    }
+    
+}

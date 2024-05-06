@@ -9,6 +9,7 @@ import {
   CustomRule,
 } from "devextreme-react/validator";
 import { checkDuplicate, getById, postAPI, putAPI } from "../../services";
+import PopupHeader from "../../layouts/popup-header-footer/PopupHeader";
 
 const SpecialtyModal = ({ show, handleClose, selectedSpecialty }) => {
   const token = localStorage.getItem("token");
@@ -19,11 +20,14 @@ const SpecialtyModal = ({ show, handleClose, selectedSpecialty }) => {
   };
   const [speciality, setSpeciality] = useState(initialData);
   const ValidationGroupName = "SpecialityModalValidation";
+  const [selectedSpecialityName,setSelectedSpecialityName] = useState();
+  
 
   const GetSpecialityById = async (id) => {
     try {
       const apiUrl = `${baseUrl}Speciality/GetById/`;
       const response = await getById(apiUrl, id, token);
+      setSelectedSpecialityName(response.SpecialityName)
       setSpeciality({
         ...speciality,
         SpecialityName: response.SpecialityName,
@@ -42,7 +46,7 @@ const SpecialtyModal = ({ show, handleClose, selectedSpecialty }) => {
 
   const asyncSpecialityNameValidation = async (e) => {
     const value = e?.value;
-    if (!selectedSpecialty || speciality.SpecialityName !== value) {
+    if (!selectedSpecialty || selectedSpecialityName !== value) {
       const apiUrl = `${baseUrl}Speciality/CheckDuplicateSpecialityName/`;
       const result = await checkDuplicate(apiUrl, value, token);
       if (!result.isOk) {
@@ -50,13 +54,13 @@ const SpecialtyModal = ({ show, handleClose, selectedSpecialty }) => {
         e.validator.validate();
         return false;
       }
-    } else if (speciality.SpecialityName == value) {
+    } else if (selectedSpecialityName == value) {
       return true;
     }
   };
 
   const handleSave = async (e) => {
-    e.preventDefault();
+    // e.preventDefault();
     if (selectedSpecialty) {
       const updatedData = {
         specialityID: selectedSpecialty,
@@ -98,6 +102,24 @@ const SpecialtyModal = ({ show, handleClose, selectedSpecialty }) => {
     }));
   }, []);
 
+  const handleSaveSpeciality=(e)=>{
+    e.preventDefault();
+    handleSave();
+  }
+
+  const PopupTitle = () => {
+    return (
+      <>
+        <PopupHeader
+          ValidationGroupName={ValidationGroupName}
+          onClosePopup={handleClose}
+          title={[<span key={"header_title"} className="base-accent-text">{selectedSpecialty?"Edit " : "Add "}</span>, "Specialty"]}
+          onSubmit={handleSave}
+        />
+      </>
+    )
+  }
+
   return (
     <Popup
       visible={show}
@@ -106,12 +128,13 @@ const SpecialtyModal = ({ show, handleClose, selectedSpecialty }) => {
       hideOnOutsideClick={true}
       showCloseButton={true}
       showTitle={true}
-      title={selectedSpecialty ? "Edit Specialty" : "Add Specialty"}
+      // title={selectedSpecialty ? "Edit Specialty" : "Add Specialty"}
+      titleRender={PopupTitle}
       container=".dx-viewport"
       maxWidth={400}
       maxHeight={280}
     >
-      <form onSubmit={handleSave}>
+      <form onSubmit={handleSaveSpeciality}>
         <div className="d-flex flex-column gap-2 mb-2">
           <TextBox
             name="SpecialityName"
@@ -160,7 +183,7 @@ const SpecialtyModal = ({ show, handleClose, selectedSpecialty }) => {
           />
           <Button
             useSubmitBehavior={true}
-            text="Save"
+            text={selectedSpecialty ? "Update" : "Save"}
             type="default"
             stylingMode="contained"
             validationGroup={ValidationGroupName}

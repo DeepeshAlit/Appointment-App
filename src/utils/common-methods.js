@@ -118,7 +118,7 @@ export const CircularGaugeFunc = (props) => {
 
 export function ShowAlert(message, title) {
   return (
-    alert(`<div class="row align-items-center"><i class="dx-icon-warning alert-icon col-auto pe-0"> </i><span class="alertText col">${message}</span></div>`, title)
+    alert(`<div class="row align-items-center "><i class="dx-icon-warning alert-icon col-auto pe-0"> </i><span class="alertText col border-0">${message}</span></div>`, title)
   )
 }
 

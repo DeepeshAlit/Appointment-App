@@ -67,6 +67,11 @@ body {
   font-size: 20px;
 }
 
+.font-semiBold-26 {
+  font-weight: 600;
+  font-size: 26px;
+}
+
 .responsive-paddings {
   padding: 20px;
 
@@ -108,4 +113,19 @@ html, body {
 
 * {
   box-sizing: border-box;
+}
+
+.alert-icon{
+  @extend .font-semiBold-26;
+  color: #f6c259;
+}
+
+.font-semiBold-14 {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.font-semiBold-18 {
+  font-weight: 600;
+  font-size: 18px;
 }

@@ -19,6 +19,7 @@ import {
   putAPI,
 } from "../../services";
 import SpecialtyModal from "../specialty/SpecialtyModal";
+import PopupHeader from "../../layouts/popup-header-footer/PopupHeader";
 
 const DoctorModal = ({
   show,
@@ -36,12 +37,14 @@ const DoctorModal = ({
     Education: "",
   };
   const [doctor, setDoctor] = useState(initialData);
+  const [selectedDoctorName,setSelectedDoctorName] = useState();
   const SelectBoxRef = useRef(null)
 
   const GetDoctorById = async (id) => {
     try {
       const apiUrl = `${baseUrl}Doctor/GetById/`;
       const response = await getById(apiUrl, id, token);
+      setSelectedDoctorName(response.DoctorName)
       setDoctor({
         ...doctor,
         DoctorName: response.DoctorName,
@@ -80,6 +83,7 @@ const DoctorModal = ({
 
   const asyncDoctorNameValidation = async (e) => {
     const value = e?.value;
+    if (!selectedDoctor || selectedDoctorName !== value) {
     const apiUrl = `${baseUrl}Doctor/CheckDuplicateDoctorName/`;
     const result = await checkDuplicate(apiUrl, value, token);
     if (!result.isOk) {
@@ -87,7 +91,10 @@ const DoctorModal = ({
       e.validator.validate();
       return false;
     }
-  };
+  }else if (selectedDoctorName == value) {
+    return true;
+  }
+}
 
   const AddButton = {
     icon: "plus",
@@ -134,10 +141,10 @@ const DoctorModal = ({
   }, []);
 
   const handleSave = async (e) => {
-    e.preventDefault();
+    // e.preventDefault();
     if (selectedDoctor) {
       const updatedDoctorData = {
-        doctorID: selectedDoctor.DoctorID,
+        doctorID: selectedDoctor,
         doctorName: doctor.DoctorName,
         specialityID: doctor.SpecialityID,
         education: doctor.Education,
@@ -168,6 +175,24 @@ const DoctorModal = ({
     }
   };
 
+  const handleSaveDoctor=(e)=>{
+    e.preventDefault();
+    handleSave();
+  }
+
+  const PopupTitle = () => {
+    return (
+      <>
+        <PopupHeader
+          ValidationGroupName={ValidationGroupName}
+          onClosePopup={handleClose}
+          title={[<span key={"header_title"} className="base-accent-text">{selectedDoctor?"Edit " : "Add "}</span>, "Doctor"]}
+          onSubmit={handleSave}
+        />
+      </>
+    )
+  }
+
   return (
     <div>
       <Popup
@@ -177,12 +202,13 @@ const DoctorModal = ({
         hideOnOutsideClick={true}
         showCloseButton={true}
         showTitle={true}
-        title={selectedDoctor ? "Edit Doctor" : "Add Doctor"}
+        // title={selectedDoctor ? "Edit Doctor" : "Add Doctor"}
+        titleRender={PopupTitle}
         // container=".dx-viewport"
         maxWidth={500}
         maxHeight={340}
       >
-        <form onSubmit={handleSave}>
+        <form onSubmit={handleSaveDoctor}>
           <div className="d-flex flex-column gap-2">
             <TextBox
               name="DoctorName"

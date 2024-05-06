@@ -7,6 +7,8 @@ import Validator, {
   CustomRule,
 } from "devextreme-react/validator";
 import { checkDuplicate,getById } from "../../services";
+import PopupHeader from "../../layouts/popup-header-footer/PopupHeader";
+import "./ItemModal.scss"
 
 const ItemModal = ({
   show,
@@ -38,7 +40,9 @@ const ItemModal = ({
   }, []);
 
   const asyncItemNameValidation = async (e) => {
+    console.log("seletedItem",item)
     const value = e?.value;
+
     if (!selectedItem || item.ItemName !== value) {
     const apiUrl = `${baseUrl}Item/CheckDuplicateItemName/`;
     const result = await checkDuplicate(apiUrl, value, token);
@@ -53,6 +57,24 @@ const ItemModal = ({
       }
   };
 
+  const handleSaveItem = (e)=>{
+e.preventDefault();
+handleSave();
+  }
+
+  const PopupTitle = () => {
+    return (
+      <>
+        <PopupHeader
+          ValidationGroupName={ValidationGroupName}
+          onClosePopup={handleClose}
+          title={[<span key={"header_title"} className="base-accent-text">{selectedItem?"Edit " : "Add "}</span>, "Item"]}
+          onSubmit={handleSave}
+        />
+      </>
+    )
+  }
+
   return (
     <Popup
       visible={show}
@@ -61,12 +83,12 @@ const ItemModal = ({
       hideOnOutsideClick={true}
       showCloseButton={true}
       showTitle={true}
-      title={selectedItem ? "Edit Item" : "Add Item"}
       container=".dx-viewport"
       maxWidth={300}
-      maxHeight={250}
+      maxHeight={210}
+      titleRender={PopupTitle}
     >
-      <form onSubmit={handleSave}>
+      <form onSubmit={handleSaveItem}>
         <TextBox
           name="itemName"
           label="Item Name"

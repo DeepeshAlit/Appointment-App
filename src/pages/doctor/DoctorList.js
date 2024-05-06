@@ -12,12 +12,11 @@ import DataGrid, {
   Grouping,
   GroupPanel,
   Lookup,
-  Paging,
-  Pager,
   Scrolling,
   ColumnChooser,
 } from "devextreme-react/data-grid";
 import { deleteApi, getAPI } from "../../services";
+import { ShowAlert } from "../../utils/common-methods";
 const DoctorList = () => {
   const baseUrl = process.env.REACT_APP_BASE_URL;
   const token = localStorage.getItem("token");
@@ -105,6 +104,8 @@ const DoctorList = () => {
         error.response &&
         error.response.data.includes("Selected record exists in Patients")
       ) {
+        setIsDeleteModalOpen(false);
+        { ShowAlert (error.response.data, "Doctors")}
         setInUseError(true);
       }
     }
@@ -148,7 +149,7 @@ const DoctorList = () => {
           hoverStateEnabled={true}
           autoNavigateToFocusedRow={true}
           onFocusedRowChanged={onFocusedRowChanged}
-          onRowDblClick={(row) => handleEditDoctor(row.data)}
+          // onRowDblClick={(row) => handleEditDoctor(row.data)}
           height={450}
         >
           <ColumnChooser enabled={true} mode="dragAndDrop" />
@@ -183,11 +184,11 @@ const DoctorList = () => {
             minWidth={250}
           ></Column>
           <Column type="buttons" minWidth={100}>
-            {/* <GridButton
+            <GridButton
             text="Edit"
             icon="edit"
             onClick={(row) => handleEditDoctor(row.row.data)}
-          /> */}
+          />
             <GridButton
               text="Delete"
               icon="trash"

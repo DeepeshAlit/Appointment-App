@@ -126,7 +126,7 @@ const AppointmentList = () => {
   };
 
   const handleSaveAppointment = async (e) => {
-    e.preventDefault();
+    // e.preventDefault();
     debugger;
     if (selectedAppointment) {
       const selectedDateTime = new Date(patientAppointment.appointmentDateTime);
@@ -313,7 +313,7 @@ const AppointmentList = () => {
           hoverStateEnabled={true}
           autoNavigateToFocusedRow={true}
           onFocusedRowChanged={onFocusedRowChanged}
-          onRowDblClick={(row) => handleEditClick(row.data)}
+          // onRowDblClick={(row) => handleEditClick(row.data)}
           width="100%"
           height={450}
         >
@@ -349,11 +349,11 @@ const AppointmentList = () => {
           />
           <Column dataField="DoctorName" caption="Doctor Name" minWidth={200} />
           <Column type="buttons" minWidth={250}>
-            {/* <GridButton
+            <GridButton
             text="Edit"
             icon="edit"
             onClick={(row) => handleEditClick(row.row.data)}
-          /> */}
+          />
             <GridButton
               text="Delete"
               icon="trash"

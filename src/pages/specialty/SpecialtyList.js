@@ -13,6 +13,7 @@ import DataGrid, {
 } from "devextreme-react/data-grid";
 import { LoadPanel } from "devextreme-react/load-panel";
 import { deleteApi, getAPI } from "../../services";
+import { ShowAlert } from "../../utils/common-methods";
 
 const SpecialtyList = () => {
   const token = localStorage.getItem("token");
@@ -89,7 +90,10 @@ const SpecialtyList = () => {
         error.response &&
         error.response.data.includes("Selected record exists in Doctors.")
       ) {
+        setIsDeleteModalOpen(false);
+        { ShowAlert(error.response.data, "Speciality")}
         setInUseError(true);
+
       }
     }
   };
@@ -125,7 +129,7 @@ const SpecialtyList = () => {
         hoverStateEnabled={true}
         autoNavigateToFocusedRow={true}
         onFocusedRowChanged={onFocusedRowChanged}
-        onRowDblClick={(row) => handleEditClick(row.data)}
+        // onRowDblClick={(row) => handleEditClick(row.data)}
         height={450}
       >
         <Scrolling mode="virtual"></Scrolling>
@@ -139,11 +143,11 @@ const SpecialtyList = () => {
           minWidth={200}
         ></Column>
         <Column type="buttons">
-          {/* <GridButton
+          <GridButton
             text="Edit"
             icon="edit"
             onClick={(row) => handleEditClick(row.row.data)}
-          /> */}
+          />
           <GridButton
             text="Delete"
             icon="trash"

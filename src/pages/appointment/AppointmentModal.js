@@ -16,6 +16,7 @@ import DateBox from "devextreme-react/date-box";
 import { getAPI } from "../../services";
 import SpecialtyModal from "../specialty/SpecialtyModal";
 import DoctorModal from "../doctor/DoctorModal";
+import PopupHeader from "../../layouts/popup-header-footer/PopupHeader";
 
 const AppointmentModal = ({
   show,
@@ -46,6 +47,7 @@ const AppointmentModal = ({
   const now = new Date();
   const SelectBoxSpecialityRef = useRef(null)
   const SelectBoxDoctorRef = useRef(null)
+  const ValidationGroupName = "AppointmentModalValidation";
 
   const fetchSpecialtyList = async () => {
     try {
@@ -196,6 +198,24 @@ const AppointmentModal = ({
     fetchDoctorList();
   };
 
+  const handleSaveAppointment=(e)=>{
+    e.preventDefault();
+    handleSave();
+  }
+
+  const PopupTitle = () => {
+    return (
+      <>
+        <PopupHeader
+          ValidationGroupName={ValidationGroupName}
+          onClosePopup={handleClose}
+          title={[<span key={"header_title"} className="base-accent-text">{selectedAppointment?"Edit " : "Add "}</span>, "Appointment"]}
+          onSubmit={handleSave}
+        />
+      </>
+    )
+  }
+
   return (
     <div>
       <Popup
@@ -205,10 +225,11 @@ const AppointmentModal = ({
         hideOnOutsideClick={true}
         showCloseButton={true}
         showTitle={true}
-        title={selectedAppointment ? "Edit Appointment" : "Add Appointment"}
+        titleRender={PopupTitle}
         maxWidth={600}
         height={510}
         maxHeight={"95vh"}
+
       >
         <form onSubmit={handleSave}>
           <DateBox
@@ -237,7 +258,7 @@ const AppointmentModal = ({
               maxLength={20}
               validationMessagePosition="down"
             >
-              <Validator>
+              <Validator validationGroup={ValidationGroupName}>
                 <RequiredRule message="Please Enter First Name" />
               </Validator>
             </TextBox>
@@ -254,7 +275,7 @@ const AppointmentModal = ({
               maxLength={20}
               validationMessagePosition="down"
             >
-              <Validator>
+              <Validator validationGroup={ValidationGroupName}>
                 <RequiredRule message="Please Enter Last Name" />
               </Validator>
             </TextBox>
@@ -270,7 +291,7 @@ const AppointmentModal = ({
               maxLength={20}
               validationMessagePosition="down"
             >
-              <Validator>
+              <Validator validationGroup={ValidationGroupName}>
                 <RequiredRule message="Please Enter Full Name" />
               </Validator>
             </TextBox>
@@ -301,7 +322,7 @@ const AppointmentModal = ({
               labelMode="floating"
               validationMessagePosition="down"
             >
-              <Validator>
+              <Validator validationGroup={ValidationGroupName}>
                 <RequiredRule message="Please Select the Gender" />
               </Validator>
             </SelectBox>
@@ -319,7 +340,7 @@ const AppointmentModal = ({
               onValueChange={(e) => handleChange("mobileNo", e)}
               validationMessagePosition="bottom"
             >
-              <Validator>
+              <Validator validationGroup={ValidationGroupName}>
                 <RequiredRule message="Mobile Number is Required" />
                 <StringLengthRule
                   min={10}
@@ -341,7 +362,7 @@ const AppointmentModal = ({
               labelMode="floating"
               validationMessagePosition="down"
             >
-              <Validator>
+              <Validator validationGroup={ValidationGroupName}>
                 <RequiredRule message="Please Select the Marital Status" />
               </Validator>
             </SelectBox>
@@ -359,7 +380,7 @@ const AppointmentModal = ({
               maxLength={20}
               validationMessagePosition="down"
             >
-              <Validator>
+              <Validator validationGroup={ValidationGroupName}>
                 <RequiredRule message="Please Enter Address" />
               </Validator>
             </TextBox>
@@ -376,7 +397,7 @@ const AppointmentModal = ({
               labelMode="floating"
               validationMessagePosition="down"
             >
-              <Validator>
+              <Validator validationGroup={ValidationGroupName}>
                 <RequiredRule message="Please Select the State" />
               </Validator>
             </SelectBox>
@@ -393,7 +414,7 @@ const AppointmentModal = ({
               labelMode="floating"
               validationMessagePosition="down"
             >
-              <Validator>
+              <Validator validationGroup={ValidationGroupName}>
                 <RequiredRule message="Please Select the City" />
               </Validator>
             </SelectBox>
@@ -410,7 +431,7 @@ const AppointmentModal = ({
             maxLength={20}
             validationMessagePosition="down"
           >
-            <Validator>
+            <Validator validationGroup={ValidationGroupName}>
               <RequiredRule message="Please Enter Reason For Appointment" />
             </Validator>
           </TextBox>
@@ -429,7 +450,7 @@ const AppointmentModal = ({
               labelMode="floating"
               validationMessagePosition="down"
             >
-              <Validator>
+              <Validator validationGroup={ValidationGroupName}>
                 <RequiredRule message="Please Select the Speciality" />
               </Validator>
               <TextBoxButton
@@ -457,7 +478,7 @@ const AppointmentModal = ({
               labelMode="floating"
               validationMessagePosition="down"
             >
-              <Validator>
+              <Validator validationGroup={ValidationGroupName}>
                 <RequiredRule message="Please Select the Doctor" />
               </Validator>
               <TextBoxButton
@@ -484,6 +505,7 @@ const AppointmentModal = ({
               text={selectedAppointment ? "Update" : "Save"}
               type="default"
               stylingMode="contained"
+              validationGroup={ValidationGroupName}
             />
           </div>
         </form>

@@ -1,8 +1,16 @@
 import React from 'react'
+import { Header } from '../../components'
 
 const home = () => {
   return (
-    <div>Home</div>
+    <div>
+      <Header
+             title={"Home"}
+            // handleAdd={handleAddClick}
+            // GetRecord={getSpecialityList}
+            // dataGridRef={DataGridRef}
+          />
+    </div>
   )
 }
 

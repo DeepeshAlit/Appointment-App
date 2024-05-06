@@ -12,6 +12,7 @@ import { LoadPanel } from "devextreme-react/load-panel";
 import "devextreme/data/odata/store";
 import { deleteApi, getAPI, postAPI, putAPI } from "../../services";
 import { useScreenSize } from "../../utils/media-query";
+import { ShowAlert } from "../../utils/common-methods";
 
 const ItemList = () => {
   const baseUrl = process.env.REACT_APP_BASE_URL;
@@ -70,7 +71,7 @@ const ItemList = () => {
   };
 
   const handleSave = async (e) => {
-    e.preventDefault();
+    // e.preventDefault();
     if (selectedItem) {
       const updatedItemData = {
         itemID: selectedItem,
@@ -122,6 +123,8 @@ const ItemList = () => {
         error.response &&
         error.response.data.includes("The statement has been terminated")
       ) {
+        setIsDeleteModalOpen(false);
+        { ShowAlert ("Cannot delete.Selected record exists in Appointments.", "Items")}
         setInUseError(true);
       }
     }
@@ -169,7 +172,7 @@ const ItemList = () => {
           hoverStateEnabled={true}
           autoNavigateToFocusedRow={true}
           onFocusedRowChanged={onFocusedRowChanged}
-          onRowDblClick={(row) => handleEditClick(row.data)}
+          // onRowDblClick={(row) => handleEditClick(row.data)}
           className="mt-2"
           height={450}
         >
@@ -180,11 +183,11 @@ const ItemList = () => {
 
           <Column dataField={"ItemName"} caption={"Item Name"} minWidth={250} />
           <Column type="buttons">
-            {/* <GridButton
+            <GridButton
             text="Edit"
             icon="edit"
             onClick={(row) => handleEditClick(row.row.data)}
-          /> */}
+          />
             <GridButton
               text="Delete"
               icon="trash"

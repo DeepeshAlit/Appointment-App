@@ -19,7 +19,7 @@ const DeleteConfirmationModal = ({
       title="Delete Confirmation"
       showCloseButton={true}
       maxWidth={400}
-      maxHeight={210}
+      maxHeight={195}
     >
       <div>
         <div>{deleteMessage}</div>

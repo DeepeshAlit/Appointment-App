@@ -98,12 +98,12 @@ export default function Header({
             {title}
           </span>
         </Item>
-        {
+        { dataGridRef &&
           <Item location={"before"}>
             <span className="vertical-line px-1">|</span>
           </Item>
         }
-        {
+        { dataGridRef &&
           <Item location="before" locateInMenu="auto">
             <Button
               icon="plus"
@@ -117,7 +117,7 @@ export default function Header({
           </Item>
         }
 
-        {
+        { dataGridRef &&
           <Item location="after" locateInMenu="auto">
             <Button
               icon="refresh"
@@ -131,7 +131,7 @@ export default function Header({
           </Item>
         }
 
-        {
+        { dataGridRef &&
           <Item location="after" locateInMenu="auto">
             <DropDownButton
               displayExpr={"name"}
@@ -151,7 +151,7 @@ export default function Header({
           </Item>
         }
 
-        {
+        { dataGridRef &&
           <Item location="after" locateInMenu="auto">
             <Button
               icon="pulldown"
@@ -164,7 +164,7 @@ export default function Header({
             ></Button>
           </Item>
         }
-        {
+        { dataGridRef &&
           <Item location={"after"}>
             <span className="vertical-line px-1">|</span>
           </Item>
